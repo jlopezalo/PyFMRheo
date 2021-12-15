@@ -8,6 +8,10 @@ setup(
     version= "0.0.1",
     description=None,
     package_dir={'pyafmrheo': 'pyafmrheo'},
+    install_requires=["lmfit>=1",
+                      "numpy>=1.16.0",  # cython build
+                      "scipy"
+                      ],
     long_description=long_description,
     long_description_content_type = "text/markdown",
     packages=find_packages(),

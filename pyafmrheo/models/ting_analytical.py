@@ -13,7 +13,7 @@ ting_analytical_params = {"pyramid": Cc_pyr, "cone": Cc_cone}
 
 
 def ting_analytical_cone(
-    time, beta, E0, slope, f0, tmax, t0, v0r, v0t, ind_shape, half_angle, poisson_ratio
+    time, betaE, E0, slope, f0, tm, t0, v0r, v0t, ind_shape, half_angle, poisson_ratio
 ):
 
     if ind_shape not in ("pyramid", "cone"):
@@ -25,14 +25,14 @@ def ting_analytical_cone(
     Cc = Cc_func(half_angle, poisson_ratio)
     
     # Compute index of tmax
-    tm_indx = (np.abs(time - tmax)).argmin()
+    tm_indx = (np.abs(time - tm)).argmin()
 
     # Split time vector on trace and retrace
     ttc = time[:tm_indx+1]
     trc = time[tm_indx+1:]
 
     # Compute t1 for retrace segment
-    t1=trc-(1+v0r/v0t)**(1/(1-beta))*(trc-tmax)
+    t1=trc-(1+v0r/v0t)**(1/(1-betaE))*(trc-tm)
     t1_end_indx = (np.abs(t1 - 0)).argmin()
     trc_end = t1_end_indx + tm_indx + 1
 
@@ -40,16 +40,16 @@ def ting_analytical_cone(
     trc = trc[:t1_end_indx]
 
     if np.abs(v0r-v0t)/v0t < 0.01:
-        Ftc=2*v0t**2*E0*t0**beta/Cc/(2-3*beta+beta**2)*ttc**(2-beta)
+        Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
     else:
-        Ftc=2*v0t**2*E0*t0**beta/Cc/(2-3*beta+beta**2)*ttc**(2-beta)
+        Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
 
     if np.abs(v0r-v0t)/v0t < 0.01:
-        Frc=2*v0r**2*E0*t0**beta/Cc/(2-3*beta+beta**2)*(trc**(2-beta)-2*(trc-tmax)**(1-beta)*(trc*(2-beta)-2**(1/(1-beta))*(1-beta)*(trc-tmax)))
+        Frc=2*v0r**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*(trc**(2-betaE)-2*(trc-tm)**(1-betaE)*(trc*(2-betaE)-2**(1/(1-betaE))*(1-betaE)*(trc-tm)))
     else:
-        Frc=2*E0*t0**beta/Cc/(2-3*beta+beta**2)*v0r*(trc**(1-beta)*(trc*v0r+(beta-2)*tmax*(v0r-v0t))-\
-            (trc-tmax)**(1-beta)*(1+v0r/v0t)*(trc*v0r*(2-(1+v0r/v0t)**(1/(1-beta))+beta*((1+v0r/v0t)**(1/(1-beta))-1))-\
-            tmax*((beta-2)*v0t+v0r*(2-(1+v0r/v0t)**(1/(1-beta))+beta*((1+v0r/v0t)**(1/(1-beta))-1)))))
+        Frc=2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*v0r*(trc**(1-betaE)*(trc*v0r+(betaE-2)*tm*(v0r-v0t))-\
+            (trc-tm)**(1-betaE)*(1+v0r/v0t)*(trc*v0r*(2-(1+v0r/v0t)**(1/(1-betaE))+betaE*((1+v0r/v0t)**(1/(1-betaE))-1))-\
+            tm*((betaE-2)*v0t+v0r*(2-(1+v0r/v0t)**(1/(1-betaE))+betaE*((1+v0r/v0t)**(1/(1-betaE))-1)))))
     
     # Output array
     force = np.empty(time.shape)

@@ -24,7 +24,7 @@ def ting_numerical(
 
     # Get time data for contact
     ting_time = time[contact_mask]
-    ting_time -= ting_time[0]
+    ting_time = ting_time - ting_time[0]
 
     # Get contact point
     d0 = indentation[contact_mask][0]
@@ -36,13 +36,13 @@ def ting_numerical(
     ting_ind = fit_ind[contact_mask]
     ting_out = np.zeros(ting_ind.shape)
 
-    max_ind_indx = np.argmax(ting_ind)
+    max_ind_indx = np.argmax(ting_ind) + 1
 
     # Fit a line y = mx + x0 on the non contact part
     y_out[~contact_mask] = fit_ind[~contact_mask] * slope + f0
 
     # Get the guesses for Et using the PLR model
-    Et = relaxation_function(time, E0, dTp, alpha)
+    Et = relaxation_function(ting_time, E0, dTp, alpha)
 
     if np.isinf(Et[0]):
         Et[0] = 2*Et[1]
@@ -61,16 +61,16 @@ def ting_numerical(
 
     # Integrate in approach segment
     y_app = np.zeros(ting_ind.shape)
-    for i in range(1, len(ting_ind) - 1):
+    for i in range(1, max_ind_indx):
         y_app[i] = coeff * (np.trapz(Et[i::-1]*ind2speed[:i+1], dx=dT))
 
     ting_out[:max_ind_indx] = y_app[:max_ind_indx]
 
     # Integrate in retract segment
     b = max_ind_indx-1
-    t1_ndx = np.zeros(len(time), dtype=int)
-    for i in range(max_ind_indx, len(time)):
-        res2 = np.zeros(len(time))
+    t1_ndx = np.zeros(len(ting_time), dtype=int)
+    for i in range(max_ind_indx, len(ting_time)):
+        res2 = np.zeros(len(ting_time))
         localend = 0
 
         for j in range(b, localend-1, -1):

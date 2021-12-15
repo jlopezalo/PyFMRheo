@@ -10,11 +10,14 @@ def TingNumericalFit(
 
     params = Parameters()
 
+    # Normalization to improve the fit quality
+    NF = (force.max()-force.min())/10
+
     # Define varying parameters for the hertz fit
     params.add('d0', value=p0[0])
     params.add('f0', value=p0[1])
     params.add('slope', value=p0[2])
-    params.add('E0', value=p0[3], min=0)
+    params.add('E0', value=p0[3]/NF, min=0)
     params.add('alpha', value=p0[4], min=0, max=1)
 
     fixed_params = {

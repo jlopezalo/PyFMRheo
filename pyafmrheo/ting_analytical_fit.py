@@ -9,10 +9,13 @@ def TingAnaliticalFit(
 
     params = Parameters()
 
+    # Normalization to improve the fit quality
+    NF = (force.max()-force.min())/10
+
     # Define varying parameters for the hertz fit
     params.add('beta', value=p0[0], min=0)
     params.add('tmax', value=p0[1], vary=False)
-    params.add('E0', value=p0[2], min=0)
+    params.add('E0', value=p0[2]/NF, min=0)
     params.add('slope', value=p0[3])
     params.add('f0', value=p0[4])
 
