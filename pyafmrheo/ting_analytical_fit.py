@@ -13,17 +13,19 @@ def TingAnaliticalFit(
     NF = (force.max()-force.min())/10
 
     # Define varying parameters for the hertz fit
-    params.add('beta', value=p0[0], min=0)
-    params.add('tmax', value=p0[1], vary=False)
-    params.add('E0', value=p0[2]/NF, min=0)
-    params.add('slope', value=p0[3])
-    params.add('f0', value=p0[4])
+    params.add('E0', value=p0[0]/NF, min=0)
+    params.add('beta', value=p0[1], min=0)
+    params.add('f0', value=p0[2], vary=False)
+    params.add('slope', value=p0[3],vary=False)
+    params.add('tmax', value=p0[4], vary=False)
 
     fixed_params = {
         't0': t0, 'v0r': v0r, 'v0t': v0t,
         'ind_shape': ind_shape, 'half_angle': tip_parameter,
         'poisson_ratio':poisson_ratio
     }
+
+    print(v0t, v0r)
 
     functing = Model(lambda time, beta, E0, slope, f0, tmax: ting_analytical_cone(time, beta, E0, slope, f0, tmax, **fixed_params))
 

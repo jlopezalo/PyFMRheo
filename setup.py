@@ -10,6 +10,7 @@ setup(
     package_dir={'pyafmrheo': 'pyafmrheo'},
     install_requires=["lmfit>=1",
                       "numpy>=1.16.0",  # cython build
+                      "pandas",
                       "scipy"
                       ],
     long_description=long_description,

@@ -1,15 +1,5 @@
 import numpy as np
-
-
-# Pyramid params coefficient
-Cc_pyr = lambda half_angle, poisson_ratio: np.pi * (1 - poisson_ratio**2) / (2 * np.tan(np.radians(half_angle)))
-
-
-# Cone geometry coefficient
-Cc_cone = lambda half_angle, poisson_ratio: 2/np.pi * np.tan(np.radians(half_angle)) * 1/(1-poisson_ratio**2)
-
-
-ting_analytical_params = {"pyramid": Cc_pyr, "cone": Cc_cone}
+from .hertz import hertz_model_params
 
 
 def ting_analytical_cone(
@@ -21,8 +11,8 @@ def ting_analytical_cone(
             "The Ting Analytical Cone model is only suitable for the pyramid and cone geometries."
         )
 
-    Cc_func = ting_analytical_params.get(ind_shape)
-    Cc = Cc_func(half_angle, poisson_ratio)
+    coeff_func, _ = hertz_model_params[ind_shape]
+    Cc = 1 / coeff_func(half_angle, poisson_ratio)
     
     # Compute index of tmax
     tm_indx = (np.abs(time - tm)).argmin()

@@ -36,7 +36,7 @@ def ting_numerical(
     ting_ind = fit_ind[contact_mask]
     ting_out = np.zeros(ting_ind.shape)
 
-    max_ind_indx = np.argmax(ting_ind) + 1
+    max_ind_indx = np.argmax(ting_ind)
 
     # Fit a line y = mx + x0 on the non contact part
     y_out[~contact_mask] = fit_ind[~contact_mask] * slope + f0
@@ -61,15 +61,15 @@ def ting_numerical(
 
     # Integrate in approach segment
     y_app = np.zeros(ting_ind.shape)
-    for i in range(1, max_ind_indx):
+    for i in range(max_ind_indx+1):
         y_app[i] = coeff * (np.trapz(Et[i::-1]*ind2speed[:i+1], dx=dT))
 
-    ting_out[:max_ind_indx] = y_app[:max_ind_indx]
+    ting_out[:max_ind_indx+1] = y_app[:max_ind_indx+1]
 
     # Integrate in retract segment
-    b = max_ind_indx-1
+    b = max_ind_indx
     t1_ndx = np.zeros(len(ting_time), dtype=int)
-    for i in range(max_ind_indx, len(ting_time)):
+    for i in range(max_ind_indx+1, len(ting_time)):
         res2 = np.zeros(len(ting_time))
         localend = 0
 
@@ -84,7 +84,7 @@ def ting_numerical(
         else:
             Imin = localend+1
 
-        if (Imin > max_ind_indx+1):
+        if (Imin > max_ind_indx+2):
             t1_ndx[i] = Imin-1
 
         elif (Imin <= 1):
