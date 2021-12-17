@@ -1,4 +1,5 @@
 # Import libraries we will need
+from _typeshed import NoneType
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -97,7 +98,7 @@ def doViscousDragMultiFreq(file_path, deflection_sensitivity=None, spring_consta
             deflection = data['deflection']
             deltat = time[1] - time[0]
             fs = 1 / deltat
-            if piezoCharData:
+            if piezoCharData is not None:
                 piezoChar = piezoCharData.loc[piezoCharData['frequency'] == frequency]
                 fi = piezoChar['fi_degrees'] # In degrees
                 amp_quotient = piezoChar['amp_quotient']

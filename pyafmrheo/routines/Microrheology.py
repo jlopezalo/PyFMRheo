@@ -129,6 +129,10 @@ def doMicrorheologyAnalysis(
             deflection = data['deflection']
             deltat = time[1] - time[0]
             fs = 1 / deltat
+            if piezoCharData is not None:
+                piezoChar = piezoCharData.loc[piezoCharData['frequency'] == frequency]
+                fi = piezoChar['fi_degrees'] # In degrees
+                amp_quotient = piezoChar['amp_quotient']
             zheight, deflection, _ =\
                 detrend_rolling_average(frequency, zheight, deflection, time, 'zheight', 'deflection', [])
             G_storage, G_loss, gamma2 =\

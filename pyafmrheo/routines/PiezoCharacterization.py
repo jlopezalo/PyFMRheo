@@ -30,7 +30,6 @@ def doPiezoCharacterization(file_path, deflection_sensitivity=None, spring_const
         curve_results = pd.DataFrame(
             columns=["file_id", "curve_idx", "frequency", "fi_degrees", "amp_quotient", "inVols"])
         force_curve = file_data[curve_idx]
-        print(dir(force_curve))
         extend_segments = force_curve.extend_segments
         pause_segments = force_curve.pause_segments
         modulation_segments = force_curve.modulation_segments
