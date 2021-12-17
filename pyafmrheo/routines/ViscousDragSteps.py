@@ -112,7 +112,7 @@ def doViscousDragSteps(file_path, deflection_sensitivity=None, spring_constant=N
             fs = 1 / deltat
             if piezoCharData is not None:
                 piezoChar = piezoCharData.loc[piezoCharData['frequency'] == frequency]
-                fi = piezoChar['fi_degrees'] # In degrees
+                fi = piezoChar['fi_degrees'].values # In degrees
                 print(fi)
                 amp_quotient = piezoChar['amp_quotient']
             zheight, deflection, _ =\
