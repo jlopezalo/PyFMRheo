@@ -1,5 +1,8 @@
 # Import libraries we will need
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.signal import detrend
 
 # Get file reader from library
 from jpkreader import load_jpk_file
@@ -7,9 +10,10 @@ from jpkreader import load_jpk_file
 # Get data analysis tools
 from pyafmrheo.utils.force_curves import *
 from pyafmrheo.utils.signal_processing import *
-from pyafmrheo.models.rheology import ComputePiezoLag
+from pyafmrheo.models.rheology import ComputeBh
 
-def doPiezoCharacterization(file_path, deflection_sensitivity=None, spring_constant=None):
+
+def doViscousDragMultiFreq(file_path, deflection_sensitivity=None, spring_constant=None, piezoCharData=None):
 
     file_results = []
 
@@ -28,9 +32,9 @@ def doPiezoCharacterization(file_path, deflection_sensitivity=None, spring_const
 
     for curve_idx in range(len(file_data)):
         curve_results = pd.DataFrame(
-            columns=["file_id", "curve_idx", "frequency", "fi_degrees", "amp_quotient", "inVols"])
+            columns=["file_id", "curve_idx", "distance","frequency", "Bh", "Hd", "inVols", "k"]
+        )
         force_curve = file_data[curve_idx]
-        print(dir(force_curve))
         extend_segments = force_curve.extend_segments
         pause_segments = force_curve.pause_segments
         modulation_segments = force_curve.modulation_segments
@@ -38,10 +42,26 @@ def doPiezoCharacterization(file_path, deflection_sensitivity=None, spring_const
         force_curve_segments = [*extend_segments, *pause_segments, *modulation_segments, *retract_segments]
         force_curve_segments = sorted(force_curve_segments, key=lambda x: int(x[0]))
 
+        # Get distance from the sample, needed to compute Bh
+        _, first_ret_seg = retract_segments[0]
+        distance_from_sample = -1 * first_ret_seg.segment_metadata['ramp_size'] # Negative
+        print(f"Distance from sample {distance_from_sample * 1e-9} m")
+
+        # Get approach, first extend segment
+        _, first_ext_seg = extend_segments[0]
+        _, app_height, _ =\
+            preprocess_segment(first_ext_seg, height_channel, deflection_sensitivity)
+
         # Get retract, last retract segment
         _, last_ret_seg = retract_segments[-1]
         _, ret_height, _ =\
             preprocess_segment(last_ret_seg, height_channel, deflection_sensitivity)
+
+        if pause_segments:
+            # Get first pause segment
+            _, first_pause_seg = pause_segments[0]
+            _, pau_height, _ =\
+                preprocess_segment(first_pause_seg, height_channel, deflection_sensitivity)
 
         if modulation_segments:
             modulation_data = {}
@@ -56,36 +76,50 @@ def doPiezoCharacterization(file_path, deflection_sensitivity=None, spring_const
 
         # Shift height
         xzero = ret_height[-1] # Maximum height
+        app_height = xzero - app_height
+        ret_height = xzero - ret_height
+        if pause_segments:
+            pau_height = xzero - pau_height
         if modulation_segments:
             for segment_data in modulation_data.values():
                 segment_data['height'] = xzero - segment_data['height']
 
         results = []
+        poc = [0, 0] # Assume d0 as 0, since we are not in contact.
+        fi = 0  # Default fi, in degrees
+        amp_quotient = 1 # Default amplitude quotient
 
         for seg_id, seg_data in modulation_segments:
             frequency = seg_data.segment_metadata["frequency"]
             data = modulation_data[seg_id]
             time = data['time']
             zheight = data['height']
-            delfection = data['deflection']
+            deflection = data['deflection']
             deltat = time[1] - time[0]
             fs = 1 / deltat
-            ntra_in, ntra_out, _ =\
-                detrend_rolling_average(frequency, zheight, delfection, time, 'indentation', 'force', [])
-            fi, amp_quotient, gamma2 =\
-                ComputePiezoLag(ntra_in, ntra_out, fs, frequency)
-            results.append((frequency, fi, amp_quotient, gamma2))
+            if piezoCharData:
+                piezoChar = piezoCharData.loc[piezoCharData['frequency'] == frequency]
+                fi = piezoChar['fi_degrees'] # In degrees
+                amp_quotient = piezoChar['amp_quotient']
+            zheight, deflection, _ =\
+                detrend_rolling_average(frequency, zheight, deflection, time, 'zheight', 'deflection', [])
+            Bh, Hd, gamma2 = ComputeBh(
+                deflection, zheight, poc, spring_constant, fs, frequency, fi=fi, amp_quotient=amp_quotient
+            )
+            results.append((frequency, Bh, Hd, gamma2))
 
         results = sorted(results, key=lambda x: int(x[0]))
         frequencies_results = [x[0] for x in results]
-        fi_results = [x[1] for x in results]
-        amp_quotient_results = [x[2] for x in results]
+        Bh_results = [x[1] for x in results]
+        Hd_results = [x[2] for x in results]
 
         curve_results["frequency"] = frequencies_results
-        curve_results["fi_degrees"] = fi_results
-        curve_results["amp_quotient"] = amp_quotient_results
+        curve_results["Bh"] = Bh_results
+        curve_results["Hd"] = Hd_results
+        curve_results["distance"] = distance_from_sample * 1e-9
         curve_results["file_id"] = file_id
         curve_results["inVols"] = deflection_sensitivity
+        curve_results["k"] = spring_constant
         curve_results["curve_idx"] = curve_idx
 
         file_results.append(curve_results)
@@ -93,10 +127,6 @@ def doPiezoCharacterization(file_path, deflection_sensitivity=None, spring_const
     return pd.concat(file_results, ignore_index=True)
 
 if __name__ == "__main__":
-    file_path = '/Users/javierlopez/Desktop/Data/javistuff/Gels-15122021/HeadPiezo/Calibration/force-save-2021.12.15-16.00.36.002.jpk-force'
-    result = doPiezoCharacterization(file_path)
+    file_path = '/Users/javierlopez/Documents/Marseille/29102021/Viscous Drag Correction - H20/Pos1/force-save-2021.10.29-16.43.34.600.jpk-force'
+    result = doViscousDragMultiFreq(file_path)
     print(result)
-
-
-
-

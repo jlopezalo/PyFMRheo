@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.signal import coherence
 from scipy.fft import fft, fftfreq
+from pyafmrheo.utils.force_curves import get_force_vs_indentation_curve
 
 def model_pyramid(G, wc, half_angle, freq, fi, bcoef, poisson_ratio):
     # Model for pyramidal indenter.
@@ -80,9 +81,14 @@ def ComputePiezoLag(zheight, deflection, fs, freq, nfft=None, freq_tol=0.0001):
 
 
 def ComputeComplexModulus(
-    force, indentation, fs, freq, ind_shape, tip_parameter,
-    wc, poisson_ratio=0.5, fi=0, bcoef=0, nfft=None, freq_tol=0.0001
+    deflection, zheight, poc, k, fs, freq, ind_shape, tip_parameter,
+    wc, poisson_ratio=0.5, fi=0, amp_quotient=1, bcoef=0, nfft=None, freq_tol=0.0001
 ):  
+
+    zheight = zheight * amp_quotient
+
+    indentation, force = get_force_vs_indentation_curve(zheight, deflection, poc, k)
+
     # Compute transfer function
     _, G, gamma2, _, _ =\
          TransferFunction(indentation, force, fs, frequency=freq, nfft=nfft, freq_tol=freq_tol)
@@ -95,15 +101,20 @@ def ComputeComplexModulus(
 
 
 def ComputeBh(
-    force, indentation, fs, freq, fi=0, nfft=None, freq_tol=0.0001
+    deflection, zheight, poc, k, fs, freq, fi=0, amp_quotient=1, nfft=None, freq_tol=0.0001
 ):  
+
+    zheight = zheight * amp_quotient
+
+    indentation, force = get_force_vs_indentation_curve(zheight, deflection, poc, k)
+
     # Compute Hd(f)=F(f)/δ(f)e-φ
     _, G, gamma2, _, _ =\
          TransferFunction(indentation, force, fs, frequency=freq, nfft=nfft, freq_tol=freq_tol)
     
     Hd = G * np.exp(-1 * np.radians(fi))
 
-    # Caluculate correction factor B(h)=Hd/(2πif) 
+    # Caluculate correction factor B(h)=Hd/(2πif)
     Bh = np.imag(Hd) / (2 * np.pi * freq)
 
     return Bh, Hd, gamma2
@@ -111,10 +122,10 @@ def ComputeBh(
 
 # Model for computing viscous drag factor
 # Reference: https://pubs.acs.org/doi/10.1021/la0110850
-
 def drag_sphere_model(distance, a_eff, h_eff, dynamic_visc):
     # b(h)) = (6 * pi * dynamic_visc * aeffˆ2)/(h+heff)
     return (6 * np.pi * dynamic_visc * a_eff ** 2) / (distance + h_eff)
+
 
 # Power-law structural damping model.
 # Reference: https://pubmed.ncbi.nlm.nih.gov/12609908/
