@@ -100,8 +100,11 @@ def doViscousDragMultiFreq(file_path, deflection_sensitivity=None, spring_consta
             fs = 1 / deltat
             if piezoCharData is not None:
                 piezoChar = piezoCharData.loc[piezoCharData['frequency'] == frequency]
-                fi = piezoChar['fi_degrees'] # In degrees
-                amp_quotient = piezoChar['amp_quotient']
+                if len(piezoChar) == 0:
+                    print(f"The frequency {frequency} was not found in the piezo characterization dataframe")
+                else:
+                    fi = piezoChar['fi_degrees'].item() # In degrees
+                    amp_quotient = piezoChar['amp_quotient'].item()
             zheight, deflection, _ =\
                 detrend_rolling_average(frequency, zheight, deflection, time, 'zheight', 'deflection', [])
             Bh, Hd, gamma2 = ComputeBh(
