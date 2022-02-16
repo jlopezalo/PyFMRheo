@@ -4,7 +4,7 @@ from .models.ting_analytical import ting_analytical_cone
 
 def TingAnaliticalFit(
     force, time, ind_shape, tip_parameter,
-    p0, t0, v0r, v0t, poisson_ratio=0.5
+    p0, t0, v0t, v0r, poisson_ratio=0.5
     ):
 
     params = Parameters()

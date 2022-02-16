@@ -3,7 +3,7 @@ from .hertz import hertz_model_params
 
 
 def ting_analytical_cone(
-    time, betaE, E0, slope, f0, tm, t0, v0r, v0t, ind_shape, half_angle, poisson_ratio
+    time, betaE, E0, slope, f0, tm, t0, v0t, v0r, ind_shape, half_angle, poisson_ratio
 ):
 
     if ind_shape not in ("pyramid", "cone"):
