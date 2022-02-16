@@ -1,5 +1,5 @@
 import numpy as np
-from hertz import hertz_model_params
+from .hertz import hertz_model_params
 
 
 def ting_analytical_cone(
