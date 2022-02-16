@@ -1,9 +1,11 @@
+from math import gamma
 import numpy as np
+from sympy import beta
 from .hertz import hertz_model_params
 
 
 def ting_analytical_cone(
-    time, betaE, E0, slope, f0, tm, t0, v0r, v0t, ind_shape, half_angle, poisson_ratio
+    time, betaE, E0, slope, f0, tm, t0, v0, ind_shape, half_angle, poisson_ratio
 ):
 
     if ind_shape not in ("pyramid", "cone"):
@@ -22,24 +24,17 @@ def ting_analytical_cone(
     trc = time[tm_indx+1:]
 
     # Compute t1 for retrace segment
-    t1=trc-(1+v0r/v0t)**(1/(1-betaE))*(trc-tm)
+    t1=trc-(1+v0)**(1/(1-betaE))*(trc-tm)
     t1_end_indx = (np.abs(t1 - 0)).argmin()
     trc_end = t1_end_indx + tm_indx + 1
 
     # Get retrace time based on t1
     trc = trc[:t1_end_indx]
 
-    if np.abs(v0r-v0t)/v0t < 0.01:
-        Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
-    else:
-        Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
+    Ftc=v0**2/Cc*E0*(t0**betaE*gamma(2)*gamma(1-betaE)/gamma(3-betaE))*ttc**(2-betaE)
 
-    if np.abs(v0r-v0t)/v0t < 0.01:
-        Frc=2*v0r**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*(trc**(2-betaE)-2*(trc-tm)**(1-betaE)*(trc*(2-betaE)-2**(1/(1-betaE))*(1-betaE)*(trc-tm)))
-    else:
-        Frc=2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*v0r*(trc**(1-betaE)*(trc*v0r+(betaE-2)*tm*(v0r-v0t))-\
-            (trc-tm)**(1-betaE)*(1+v0r/v0t)*(trc*v0r*(2-(1+v0r/v0t)**(1/(1-betaE))+betaE*((1+v0r/v0t)**(1/(1-betaE))-1))-\
-            tm*((betaE-2)*v0t+v0r*(2-(1+v0r/v0t)**(1/(1-betaE))+betaE*((1+v0r/v0t)**(1/(1-betaE))-1)))))
+    Frc=v0**2*E0*t0**betaE/Cc*(gamma(2)*gamma(1-betaE)/gamma(3-betaE))*2*\
+        (t0**(2-betaE)-2*(ttc*(2-betaE)+2**(1/(1-betaE)*(1-betaE)*(ttc-tm)))*(ttc-tm)**(1-betaE))
     
     # Output array
     force = np.empty(time.shape)
@@ -56,8 +51,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     poisson_ratio = 0.5
     tip_angle = 35.0
-    v0t = 4.9999999999999996e-06
-    v0r = 4.9999999999999996e-06
+    v0 = 4.9999999999999996e-06
     t0 = 1
     E0 = 603
     betaE = 0.2
@@ -71,7 +65,7 @@ if __name__ == "__main__":
 
     time = np.r_[ttc, trc]
 
-    f = ting_analytical_cone(time, betaE, E0, slope, f0, tm, t0, v0r, v0t, "pyramid", tip_angle, poisson_ratio)
+    f = ting_analytical_cone(time, betaE, E0, slope, f0, tm, t0, v0, "pyramid", tip_angle, poisson_ratio)
 
     plt.plot(time, f)
     plt.show()

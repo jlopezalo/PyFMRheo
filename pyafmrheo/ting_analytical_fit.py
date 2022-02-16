@@ -4,7 +4,7 @@ from .models.ting_analytical import ting_analytical_cone
 
 def TingAnaliticalFit(
     force, time, ind_shape, tip_parameter,
-    p0, t0, v0r, v0t, poisson_ratio=0.5
+    p0, t0, v0, poisson_ratio=0.5
     ):
 
     params = Parameters()
@@ -20,12 +20,9 @@ def TingAnaliticalFit(
     params.add('tmax', value=p0[4], vary=False)
 
     fixed_params = {
-        't0': t0, 'v0r': v0r, 'v0t': v0t,
-        'ind_shape': ind_shape, 'half_angle': tip_parameter,
-        'poisson_ratio':poisson_ratio
+        't0': t0, 'v0': v0, 'ind_shape': ind_shape,
+        'half_angle': tip_parameter, 'poisson_ratio':poisson_ratio
     }
-
-    print(v0t, v0r)
 
     functing = Model(lambda time, beta, E0, slope, f0, tmax: ting_analytical_cone(time, beta, E0, slope, f0, tmax, **fixed_params))
 
