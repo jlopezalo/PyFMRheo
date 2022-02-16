@@ -34,7 +34,7 @@ def ting_analytical_cone(
     Ftc=v0**2/Cc*E0*(t0**betaE*gamma(2)*gamma(1-betaE)/gamma(3-betaE))*ttc**(2-betaE)
 
     Frc=v0**2*E0*t0**betaE/Cc*(gamma(2)*gamma(1-betaE)/gamma(3-betaE))*2*\
-        (t0**(2-betaE)-2*(ttc*(2-betaE)+2**(1/(1-betaE)*(1-betaE)*(ttc-tm)))*(ttc-tm)**(1-betaE))
+        (t0**(2-betaE)-2*(ttc*(2-betaE)+2**(1/(1-betaE))*(1-betaE)*(ttc-tm))*(ttc-tm)**(1-betaE))
     
     # Output array
     force = np.empty(time.shape)
