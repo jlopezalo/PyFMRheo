@@ -41,8 +41,9 @@ def ting_analytical_cone(
             Frp=3/2*v0r**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*t1**(3/2-betaE)
 
         else:
+            a = [hyper([1, 1/2-betaE], [1/2], t1[i]/trc[i]) for i in range(len(trc))]
             Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
-                (-trc+(2*betaE-1)*t1+trc*hyper([1, 1/2-betaE], 1/2, t1/trc))
+                (-trc+(2*betaE-1)*t1+trc*np.asarray(a))
         FJ = np.r_[Ftp, Frp]
     
     elif ind_shape in ("pyramid", "cone"):
@@ -71,9 +72,9 @@ def ting_analytical_cone(
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     poisson_ratio = 0.5
-    tip_angle = 35.0
+    tip_angle = 75 / 1e9
     v0t = 4.9999999999999996e-06
-    v0r = 4.9999999999999996e-06
+    v0r = 6e-06
     t0 = 1
     E0 = 603
     betaE = 0.2
@@ -87,7 +88,7 @@ if __name__ == "__main__":
 
     time = np.r_[ttc, trc]
 
-    f = ting_analytical_cone(time, betaE, E0, slope, f0, tm, t0, v0r, v0t, "pyramid", tip_angle, poisson_ratio)
+    f = ting_analytical_cone(time, betaE, E0, slope, f0, tm, t0, v0r, v0t, "paraboloid", tip_angle, poisson_ratio)
 
     plt.plot(time, f)
     plt.show()
