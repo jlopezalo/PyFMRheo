@@ -24,7 +24,7 @@ def ting_analytical_cone(
     # Compute t1 for retrace segment
     t1_full=trc-(1+v0r/v0t)**(1/(1-betaE))*(trc-tm)
     t1_end_indx = (np.abs(t1_full - 0)).argmin()
-    trc_end = t1_end_indx + tm_indx + 1
+    trc_end = t1_end_indx + tm_indx
 
     # Get retrace time based on t1
     t1 = t1_full[t1_full>0]
