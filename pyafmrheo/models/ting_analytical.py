@@ -1,19 +1,19 @@
 import numpy as np
 from .hertz import hertz_model_params
+from mpmath import gamma, hyper
 
 
 def ting_analytical_cone(
     time, betaE, E0, slope, f0, tm, t0, v0t, v0r, ind_shape, half_angle, poisson_ratio
 ):
 
-    if ind_shape not in ("pyramid", "cone"):
+    if ind_shape not in ("paraboloid", "pyramid", "cone"):
         raise Exception(
             "The Ting Analytical Cone model is only suitable for the pyramid and cone geometries."
         )
-
-    coeff_func, _ = hertz_model_params[ind_shape]
-    Cc = 1 / coeff_func(half_angle, poisson_ratio)
     
+    v0=(v0r+v0t)/2
+
     # Compute index of tmax
     tm_indx = (np.abs(time - tm)).argmin()
 
@@ -22,32 +22,52 @@ def ting_analytical_cone(
     trc = time[tm_indx+1:]
 
     # Compute t1 for retrace segment
-    t1=trc-(1+v0r/v0t)**(1/(1-betaE))*(trc-tm)
-    t1_end_indx = (np.abs(t1 - 0)).argmin()
+    t1_full=trc-(1+v0r/v0t)**(1/(1-betaE))*(trc-tm)
+    t1_end_indx = (np.abs(t1_full - 0)).argmin()
     trc_end = t1_end_indx + tm_indx + 1
 
     # Get retrace time based on t1
-    trc = trc[:t1_end_indx]
+    t1 = t1_full[t1_full>0]
+    trc = trc[t1_full>0]
 
-    if np.abs(v0r-v0t)/v0t < 0.01:
-        Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
-    else:
-        Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
+    if ind_shape == "paraboloid":
 
-    if np.abs(v0r-v0t)/v0t < 0.01:
-        Frc=2*v0r**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*(trc**(2-betaE)-2*(trc-tm)**(1-betaE)*(trc*(2-betaE)-2**(1/(1-betaE))*(1-betaE)*(trc-tm)))
-    else:
-        Frc=2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*v0r*(trc**(1-betaE)*(trc*v0r+(betaE-2)*tm*(v0r-v0t))-\
-            (trc-tm)**(1-betaE)*(1+v0r/v0t)*(trc*v0r*(2-(1+v0r/v0t)**(1/(1-betaE))+betaE*((1+v0r/v0t)**(1/(1-betaE))-1))-\
-            tm*((betaE-2)*v0t+v0r*(2-(1+v0r/v0t)**(1/(1-betaE))+betaE*((1+v0r/v0t)**(1/(1-betaE))-1)))))
+        coeff_func, _ = hertz_model_params[ind_shape]
+        Cp = 1 / coeff_func(half_angle, poisson_ratio)
+
+        Ft=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*ttc**(3/2-betaE)
+
+        if np.abs(v0r-v0t)/v0t < 0.01:
+            Fr=3/2*v0r**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*t1**(3/2-betaE)
+
+        else:
+            Fr=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
+                (-trc+(2*betaE-1)*t1+trc*hyper([1, 1/2-betaE], 1/2, t1/trc))
+    
+    elif ind_shape in ("pyramid", "cone"):
+
+        coeff_func, _ = hertz_model_params[ind_shape]
+        Cc = 1 / coeff_func(half_angle, poisson_ratio)
+
+        if np.abs(v0r-v0t)/v0t < 0.01:
+            Ft=2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
+        else:
+            Ft=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
+
+        if np.abs(v0r-v0t)/v0t < 0.01:
+            Fr=-2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
+                trc**(1-betaE)*(trc))
+        else:
+            Fr=-2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
+                trc**(1-betaE)*(trc))
     
     # Output array
     force = np.empty(time.shape)
 
     # Assign force to output array
-    force[:tm_indx+1] = Ftc + f0
-    force[tm_indx+1:trc_end] = Frc + f0
-    force[trc_end:].fill(Frc[-1] + f0)
+    force[:tm_indx+1] = Ft + f0
+    force[tm_indx+1:trc_end] = Fr + f0
+    force[trc_end:].fill(f0)
     
     return force
 

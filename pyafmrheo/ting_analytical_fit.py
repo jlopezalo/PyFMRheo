@@ -20,7 +20,7 @@ def TingAnaliticalFit(
     params.add('tmax', value=p0[4], vary=False)
 
     fixed_params = {
-        't0': t0, 'v0r': v0r, 'v0t': v0t,
+        't0': t0, 'v0t': v0t, 'v0r': v0r,
         'ind_shape': ind_shape, 'half_angle': tip_parameter,
         'poisson_ratio':poisson_ratio
     }
