@@ -35,14 +35,15 @@ def ting_analytical_cone(
         coeff_func, _ = hertz_model_params[ind_shape]
         Cp = 1 / coeff_func(half_angle, poisson_ratio)
 
-        Ft=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*ttc**(3/2-betaE)
+        Ftp=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*ttc**(3/2-betaE)
 
         if np.abs(v0r-v0t)/v0t < 0.01:
-            Fr=3/2*v0r**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*t1**(3/2-betaE)
+            Frp=3/2*v0r**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*t1**(3/2-betaE)
 
         else:
-            Fr=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
+            Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
                 (-trc+(2*betaE-1)*t1+trc*hyper([1, 1/2-betaE], 1/2, t1/trc))
+        FJ = np.r_[Ftp, Frp]
     
     elif ind_shape in ("pyramid", "cone"):
 
@@ -50,26 +51,21 @@ def ting_analytical_cone(
         Cc = 1 / coeff_func(half_angle, poisson_ratio)
 
         if np.abs(v0r-v0t)/v0t < 0.01:
-            Ft=2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
+            Ftc=2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
         else:
-            Ft=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
+            Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
 
         if np.abs(v0r-v0t)/v0t < 0.01:
-            Fr=-2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
+            Frc=-2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
                 trc**(1-betaE)*(trc))
         else:
-            Fr=-2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
+            Frc=-2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
                 trc**(1-betaE)*(trc))
+        FJ = np.r_[Ftc, Frc]
     
-    # Output array
-    force = np.empty(time.shape)
-
-    # Assign force to output array
-    force[:tm_indx+1] = Ft + f0
-    force[t1_full>0] = Fr + f0
-    force[trc_end:].fill(f0)
+    ncr = len(time) - len(FJ)
     
-    return force
+    return np.r_[FJ, np.ones(ncr)*f0]
 
 
 if __name__ == "__main__":
