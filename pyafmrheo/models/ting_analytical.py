@@ -38,12 +38,12 @@ def ting_analytical_cone(
         Ftp=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*ttc**(3/2-betaE)
 
         if np.abs(v0r-v0t)/v0t < 0.01:
-            Frp=3/2*v0r**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*t1**(3/2-betaE)
+            Frp=3/2*v0r**(3/2)*E0*t0^betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*t1**(3/2-betaE)
 
         else:
             a = [hyper([1, 1/2-betaE], [1/2], t1[i]/trc[i]) for i in range(len(trc))]
             Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
-                (-trc+(2*betaE-1)*t1+trc*np.asarray(a))
+                (-trc+(2*betaE-1)*t1+trc*a)
         FJ = np.r_[Ftp, Frp]
     
     elif ind_shape in ("pyramid", "cone"):
@@ -54,7 +54,7 @@ def ting_analytical_cone(
         if np.abs(v0r-v0t)/v0t < 0.01:
             Ftc=2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
         else:
-            Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
+            Ftc=2*v0t**2.*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
 
         if np.abs(v0r-v0t)/v0t < 0.01:
             Frc=-2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
