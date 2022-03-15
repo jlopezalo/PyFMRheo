@@ -50,12 +50,12 @@ def ting_numerical(
         Et[0] = Et[1]+(Et[1]-Et[2])
 
     # Compute indspeed
-    ind2speed = np.diff(ting_ind**n)
+    ind2speed = np.diff(ting_ind**n)/dT
     ind2speed = np.append(ind2speed, ind2speed[-1])
     ind2speed = smoothM(ind2speed, smoothing_window)
 
     # Compute ind2speed
-    indspeed = np.diff(ting_ind)
+    indspeed = np.diff(ting_ind)/dT
     indspeed = np.append(indspeed, indspeed[-1])
     indspeed = smoothM(indspeed, smoothing_window)
 
