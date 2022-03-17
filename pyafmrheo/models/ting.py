@@ -57,10 +57,15 @@ def SolveAnalytical(ttc, trc, t1, model_probe, geom_coeff, v0t, v0r, v0, E0, bet
 def SolveNumerical(delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr):
     delta0 = delta - delta[idxCt[0]]
     delta_Uto_dot = np.zeros(len(delta0))
-    delta_Uto_dot[idxCt[0]:] = smoothM(np.r_[numdiff(delta0[idxCt]**geom_exp), numdiff(delta0[idxCr[0]:]**geom_exp)], smooth_w)
+    A = smoothM(np.r_[numdiff(delta0[idxCt]**geom_exp), numdiff(delta0[idxCr[0]:]**geom_exp)], smooth_w)
+    if len(A) < len(delta_Uto_dot[idxCt[0]:]):
+        A = np.append(A, A[-1])
+    delta_Uto_dot[idxCt[0]:] = A
     delta_dot = np.zeros(len(delta0))
-    delta_dot[idxCt[0]:] = smoothM(np.r_[numdiff(delta0[idxCt]), numdiff(delta0[idxCr[0]:])], smooth_w)
-    delta_dot = np.append(delta_dot, delta_dot[-1])
+    B = smoothM(np.r_[numdiff(delta0[idxCt]), numdiff(delta0[idxCr[0]:])], smooth_w)
+    if len(B) < len(delta_Uto_dot[idxCt[0]:]):
+        B = np.append(B, B[-1])
+    delta_dot[idxCt[0]:] = B
     Ftc = np.zeros(len(idxCt))
     for i in range(len(idxCt)):
         idx = idxCt[0] + np.arange(1, i)
