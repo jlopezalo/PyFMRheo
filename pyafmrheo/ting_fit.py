@@ -32,4 +32,4 @@ def TingFit(force, delta, time, model_probe, tip_parameter, p0, modelFt, poisson
     print(f'Ting parameter names: {functing.param_names}')
     print(f'Ting independent variables: {functing.independent_vars}')
 
-    return functing.fit(force, params, time_=time)
+    return functing.fit(force, params, time=time)

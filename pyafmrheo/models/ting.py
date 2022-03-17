@@ -77,25 +77,25 @@ def SolveNumerical(delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, 
         Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
     return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
 
-def Ting(time_, t0, E0, tc, betaE, F0, F, delta, model_probe, geom_coeff, geom_exp, modelFt, vdrag, idx_tm=None, smooth_w=None):
+def Ting(time, t0, E0, tc, betaE, F0, F, delta, model_probe, geom_coeff, geom_exp, modelFt, vdrag, idx_tm=None, smooth_w=None):
     # Shift time using t at contact.
-    time_=time_-tc
+    time=time-tc
     # Compute deltat.
-    deltat=time_[1]-time_[0]
+    deltat=time[1]-time[0]
     # If no t max index is given search the index of F max.
     if idx_tm is None:
         idx_tm = np.argmax(F)
     # Get t max value.
-    tm = time_[idx_tm]
+    tm = time[idx_tm]
     # Determine non contact trace region.
-    idxNCt=np.where(time_<0)[0]
+    idxNCt=np.where(time<0)[0]
     # Determine contact trace region
-    idxCt=np.where(time_>=0)[0]
+    idxCt=np.where(time>=0)[0]
     # Get indices corresponding to contact trace region.
     # Including t max.
     idxCt = np.arange(idxCt[0], idx_tm + 1)
     # Determine contact time trace.
-    ttc=time_[idxCt]
+    ttc=time[idxCt]
     # Define range to compute trace speed.
     # Including t max.
     range_v0t=np.arange((idx_tm-int(len(ttc)*3/4)), idx_tm)
@@ -104,8 +104,8 @@ def Ting(time_, t0, E0, tc, betaE, F0, F, delta, model_probe, geom_coeff, geom_e
     range_v0r=np.arange(idx_tm+2, (idx_tm+1+int(len(ttc)*3/4)))
     # Fit 1 degree polynomial (x0 + m) to trace and retrace for determining
     # the corresponding speeds (x0)
-    v0t = np.polyfit(time_[range_v0t], delta[range_v0t], 1)[0]
-    v0r = -1 * np.polyfit(time_[range_v0r], delta[range_v0r], 1)[0]
+    v0t = np.polyfit(time[range_v0t], delta[range_v0t], 1)[0]
+    v0r = -1 * np.polyfit(time[range_v0r], delta[range_v0r], 1)[0]
     # Compute mean speed.
     v0=(v0r+v0t)/2
     # Compute retrace contact time.
@@ -114,11 +114,11 @@ def Ting(time_, t0, E0, tc, betaE, F0, F, delta, model_probe, geom_coeff, geom_e
     # If the retrace contact time is smaller than t max,
     # define the end of the contact retrace region as 3 times t max.
     if not tcr<tm:
-        idxCr=np.where((time_>tm) & (time_<=tcr))[0]
+        idxCr=np.where((time>tm) & (time<=tcr))[0]
     else:
-        idxCr=np.where((time_>tm) & (time_<=3*tm))[0]
+        idxCr=np.where((time>tm) & (time<=3*tm))[0]
     # Define in contact retrace region.
-    trc=time_[idxCr]
+    trc=time[idxCr]
     # Compute t1
     # TO DO: ADD REFERENCE TO ARTICLE!!!!
     t1=trc-(1+v0r/v0t)**(1/(1-betaE))*(trc-tm)
@@ -138,7 +138,7 @@ def Ting(time_, t0, E0, tc, betaE, F0, F, delta, model_probe, geom_coeff, geom_e
         )
     elif modelFt == 'numerical':
         FJ = SolveNumerical(
-            delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr
+            delta, time, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr
         )
     else:
         print(f'The modelFt {modelFt} is not supported. Current valid modelFt: analytical, numerical.')
