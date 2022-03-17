@@ -38,9 +38,9 @@ def SolveAnalytical(ttc, trc, t1, model_probe, geom_coeff, v0t, v0r, v0, E0, bet
         if np.abs(v0r-v0t)/v0t<0.01:
             Frp=3/2*v0r**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*np.array(gamma(1-betaE), dtype=float)/(Cp*2*np.array(gamma(5/2-betaE), dtype=float))*t1**(3/2-betaE)
         else:
-            A = [float(hyper([1, 1/2-betaE], [1/2], t1[i]/trc[i])) for i in range(len(trc))]
+            A = [hyper([1, 1/2-betaE], [1/2], t1[i]/trc[i]) for i in range(len(trc))]
             Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
-                (-trc+(2*betaE-1)*t1+trc*np.array(A))
+                (-trc+(2*betaE-1)*t1+trc*np.array(A, dtype=float))
         return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag]+F0
     elif model_probe in ('cone', 'pyramid'):
         Cc=1/geom_coeff
