@@ -2,6 +2,13 @@ import numpy as np
 import pandas as pd
 from scipy.signal import detrend
 
+def numdiff(y):
+    diffy = np.zeros(len(y))
+    idx = np.arange(2, len(y)-3)
+    diffy[idx] = (-y[idx+2]+8*y[idx+1]-8*y[idx-1]+y[idx-2])/12
+    diffy[:2]=diffy[2]
+    diffy[len(diffy)-3:]=diffy[len(diffy)-4]
+    return diffy
 
 def smoothM(d, parS):
     y = d
