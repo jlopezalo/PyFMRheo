@@ -77,7 +77,7 @@ def SolveNumerical(delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, 
         Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
     return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
 
-def Ting(time_, t0, E0, tc, betaE, F, delta, model_probe, geom_coeff, geom_exp, modelFt, vdrag, idx_tm=None, smooth_w=None):
+def Ting(time_, t0, E0, tc, betaE, F0, F, delta, model_probe, geom_coeff, geom_exp, modelFt, vdrag, idx_tm=None, smooth_w=None):
     # Shift time using t at contact.
     time_=time_-tc
     # Compute deltat.
@@ -167,6 +167,7 @@ if __name__ == "__main__":
     model_probe = 'pyramid'
     geom_coeff = np.pi * (1 - 0.5**2) / (2 * np.tan((np.pi * 35 / 180)))
     geom_exp = 2
+    F0=0
     
     # Define time
     time_=np.linspace(-1/4,tm*2,N)
@@ -180,7 +181,7 @@ if __name__ == "__main__":
     # Testing NUMERICAL models #######################################
     tc = tm/2
     t0 = 1
-    FT = Ting(time_, t0, E0, tc, betaT0, delta, delta, model_probe, geom_coeff, geom_exp, 'numerical', vdrag, None, smooth_w)
+    FT = Ting(time_, t0, E0, tc, betaT0, F0, delta, delta, model_probe, geom_coeff, geom_exp, 'numerical', vdrag, None, smooth_w)
 
     # Print max force to see if the peak is at the same force as in Felix code.
     # print(FT.max())
@@ -188,7 +189,7 @@ if __name__ == "__main__":
     # Testing ANALYTICAL models ######################################
     tc = tm/2
     t0 = 1
-    FJ = Ting(time_, t0, E0, tc, betaT0, delta, delta, model_probe, geom_coeff, geom_exp, 'analytical', vdrag, None, smooth_w)
+    FJ = Ting(time_, t0, E0, tc, betaT0, F0, delta, delta, model_probe, geom_coeff, geom_exp, 'analytical', vdrag, None, smooth_w)
     
     # Print max force to see if the peak is at the same force as in Felix code.
     # print(FJ.max())

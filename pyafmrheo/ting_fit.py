@@ -15,6 +15,7 @@ def TingFit(force, delta, time, model_probe, tip_parameter, p0, modelFt, poisson
     params.add('E0', value=p0[1]/NF, min=0)
     params.add('tc', value=p0[2], min=0)
     params.add('betaE', value=p0[3], min=0, max=1)
+    params.add('F0', value=p0[4])
 
     # Get coefficient function and exponent
     coeff_func, n = hertz_model_params[model_probe]
@@ -26,7 +27,7 @@ def TingFit(force, delta, time, model_probe, tip_parameter, p0, modelFt, poisson
         'vdrag':vdrag, 'idx_tm': idx_tm, 'smooth_w':smooth_w
     }
 
-    functing = Model(lambda time, t0, E0, tc, betaE,: Ting(time, t0, E0, tc, betaE, **fixed_params))
+    functing = Model(lambda time, t0, E0, tc, betaE, F0: Ting(time, t0, E0, tc, betaE, F0, **fixed_params))
 
     print(f'Ting parameter names: {functing.param_names}')
     print(f'Ting independent variables: {functing.independent_vars}')
