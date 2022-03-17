@@ -34,13 +34,13 @@ def SolveAnalytical(ttc, trc, t1, model_probe, geom_coeff, v0t, v0r, v0, E0, bet
     # TO DO: ADD REFERENCE!!!
     if model_probe == 'paraboloid':
         Cp=1/geom_coeff
-        Ftp=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*ttc**(3/2-betaE)
+        Ftp=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*np.array(gamma(1-betaE), dtype=float)/(Cp*2*np.array(gamma(5/2-betaE), dtype=float))*ttc**(3/2-betaE)
         if np.abs(v0r-v0t)/v0t<0.01:
-            Frp=3/2*v0r**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*gamma(1-betaE)/(Cp*2*gamma(5/2-betaE))*t1**(3/2-betaE)
+            Frp=3/2*v0r**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*np.array(gamma(1-betaE), dtype=float)/(Cp*2*np.array(gamma(5/2-betaE), dtype=float))*t1**(3/2-betaE)
         else:
-            A = [hyper([1, 1/2-betaE], [1/2], t1[i]/trc[i]) for i in range(len(trc))]
+            A = [float(hyper([1, 1/2-betaE], [1/2], t1[i]/trc[i])) for i in range(len(trc))]
             Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
-                (-trc+(2*betaE-1)*t1+trc*A)
+                (-trc+(2*betaE-1)*t1+trc*np.array(A))
         return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag]+F0
     elif model_probe in ('cone', 'pyramid'):
         Cc=1/geom_coeff
@@ -169,9 +169,10 @@ if __name__ == "__main__":
     tp=1
     vdrag=0
     smooth_w=1
-    model_probe = 'pyramid'
-    geom_coeff = np.pi * (1 - 0.5**2) / (2 * np.tan((np.pi * 35 / 180)))
-    geom_exp = 2
+    model_probe = 'paraboloid'
+    # geom_coeff = np.pi * (1 - 0.5**2) / (2 * np.tan((np.pi * 35 / 180)))
+    geom_coeff = 4/3 * np.sqrt(75*1e-9) * 1/(1-0.5**2)
+    geom_exp = 3/2
     F0=0
     
     # Define time
