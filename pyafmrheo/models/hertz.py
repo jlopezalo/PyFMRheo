@@ -46,8 +46,7 @@ bec_models_key = {
 # Hertz model function to minimize
 def hertz_model(
     indentation, delta0, E0, f0, slope, poisson_ratio,
-    indenter_shape, tip_parameter, sample_height, bec_model,
-    fit_range_type, min_val, max_val
+    indenter_shape, tip_parameter, sample_height, bec_model
 ):
 
     # Define output array
@@ -58,9 +57,6 @@ def hertz_model(
 
     # Get the value of the contact point
     delta0 = indentation[idx]
-
-    # Shift indentation with new delta
-    indentation = indentation - delta0
 
     # Get coefficient function and exponent
     coeff_func, n = hertz_model_params[indenter_shape]
