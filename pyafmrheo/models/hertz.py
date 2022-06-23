@@ -175,7 +175,6 @@ class HertzModel:
         slope: {self.slope}\n
         # Fit metrics
         MAE: {self.MAE}\n
-        SE: {self.SE}\n
         MSE: {self.MSE}\n
         RMSE: {self.RMSE}\n
         Rsq: {self.Rsquared}\n
