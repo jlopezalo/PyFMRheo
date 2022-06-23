@@ -46,6 +46,14 @@ class HertzModel:
         self.poisson_ratio = 0.5
         # Sample height
         self.sample_height = None
+        # Goodness of fit metrics
+        self.MAE = None
+        self.SE = None
+        self.MSE = None
+        self.RMSE = None
+        self.Rsquared = None
+        self.chisq = None
+        self.redchi = None
     
     def get_bec_coeffs(self, sample_height, indentation):
         bec_params = [sample_height, (indentation - self.delta0), self.indenter_shape, self.tip_parameter]
@@ -132,22 +140,46 @@ class HertzModel:
 
         absError = modelPredictions - force
 
-        MAE = np.mean(absError) # mean absolute error
-        SE = np.square(absError) # squared errors
-        MSE = np.mean(SE) # mean squared errors
-        RMSE = np.sqrt(MSE) # Root Mean Squared Error, RMSE
-        Rsquared = 1.0 - (np.var(absError) / np.var(force))
+        self.MAE = np.mean(absError) # mean absolute error
+        self.SE = np.square(absError) # squared errors
+        self.MSE = np.mean(self.SE) # mean squared errors
+        self.RMSE = np.sqrt(self.MSE) # Root Mean Squared Error, RMSE
+        self.Rsquared = 1.0 - (np.var(absError) / np.var(force))
         
         # Get goodness of fit params
-        redchi = self.get_red_chisq(indentation, force)
-
-        return res, redchi
+        self.chisq = self.get_chisq(indentation, force, sample_height)
+        self.redchi = self.get_red_chisq(indentation, force, sample_height)
 
     def eval(self, indentation, sample_height=None):
         return self.objective(indentation, self.delta0, self.E0, self.f0, self.slope, sample_height)
+    
+    def get_residuals(self, x, y,  sample_height=None):
+        return y - self.eval(x, sample_height)
 
     def get_chisq(self, x, y, sample_height=None):
-        return np.sum(((y - self.eval(x, sample_height))/np.std(y))**2)
+        return np.sum((self.get_residuals(x, y, sample_height)/np.std(y))**2)
     
     def get_red_chisq(self, x, y, sample_height=None):
         return self.get_chisq(x, y, sample_height) / self.n_params
+    
+    def fit_report(self):
+        print(f"""
+        # Fit parameters
+        Indenter shape: {self.ind_geom}\n
+        Tip paraneter: {self.tip_parameter}\n
+        BEC Model: {self.bec_model}\n
+        Number of free parameters: {self.n_params}\n
+        delta0: {self.delta0}\n
+        E0: {self.E0}\n
+        f0: {self.f0}\n
+        slope: {self.slope}\n
+        # Fit metrics
+        MAE: {self.MAE}\n
+        SE: {self.SE}\n
+        MSE: {self.MSE}\n
+        RMSE: {self.RMSE}\n
+        Rsq: {self.Rsquared}\n
+        Chisq: {self.chisq}\n
+        RedChisq: {self.redchi}\n
+        """
+        )
