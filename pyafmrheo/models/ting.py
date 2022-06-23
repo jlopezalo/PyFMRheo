@@ -124,6 +124,8 @@ class TingModel:
         # Determine contact trace region
         idxCt=np.where(time>=0)[0]
         # Get indices corresponding to contact trace region.
+        if len(idxCt) == 0:
+            return
         # Including t max.
         idxCt = np.arange(idxCt[0], idx_tm + 1)
         # Determine contact time trace.
