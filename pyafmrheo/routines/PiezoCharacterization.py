@@ -7,7 +7,7 @@ from jpkreader import load_jpk_file
 # Get data analysis tools
 from pyafmrheo.utils.force_curves import *
 from pyafmrheo.utils.signal_processing import *
-from pyafmrheo.models.rheology import ComputePiezoLag
+from pyafmrheo.models.old.rheology import ComputePiezoLag
 
 def doPiezoCharacterization(file_path, deflection_sensitivity=None, spring_constant=None):
 

@@ -1,7 +1,7 @@
 from lmfit import Model, Parameters
 import numpy as np
 
-from .models.hertz import hertz_model
+from .models.old.hertz import hertz_model
 
 def HertzFit(
     approach_indentation, approach_force, ind_shape, tip_parameter,

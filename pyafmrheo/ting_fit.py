@@ -1,8 +1,8 @@
 from lmfit import Model, Parameters
 import numpy as np
 
-from pyafmrheo.models.ting import Ting
-from pyafmrheo.models.hertz import hertz_model_params
+from pyafmrheo.models.old.ting import Ting
+from pyafmrheo.models.old.hertz import hertz_model_params
 
 def TingFit(force, delta, time, model_probe, tip_parameter, p0, modelFt, poisson_ratio=0.5, vdrag=0, smooth_w=1, idx_tm=None):
 

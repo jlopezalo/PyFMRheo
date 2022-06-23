@@ -11,7 +11,7 @@ from jpkreader import load_jpk_file
 from pyafmrheo.utils.force_curves import *
 from pyafmrheo.utils.signal_processing import *
 from pyafmrheo.hertz_fit import HertzFit
-from pyafmrheo.models.rheology import ComputeComplexModulus
+from pyafmrheo.models.old.rheology import ComputeComplexModulus
 
 
 def doMicrorheologyAnalysis(

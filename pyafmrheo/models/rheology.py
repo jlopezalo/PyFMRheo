@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import coherence
 from scipy.fft import fft, fftfreq
-from pyafmrheo.utils.force_curves import get_force_vs_indentation_curve
+from ..utils.force_curves import get_force_vs_indentation_curve
 
 def model_pyramid(G, wc, half_angle, freq, fi, bcoef, poisson_ratio):
     # Model for pyramidal indenter.
@@ -118,29 +118,4 @@ def ComputeBh(
     Bh = np.imag(Hd) / (2 * np.pi * freq)
 
     return Bh, Hd, gamma2
-
-
-# Model for computing viscous drag factor
-# Reference: https://pubs.acs.org/doi/10.1021/la0110850
-def drag_sphere_model(distance, a_eff, h_eff, dynamic_visc):
-    # b(h)) = (6 * pi * dynamic_visc * aeffˆ2)/(h+heff)
-    return (6 * np.pi * dynamic_visc * a_eff ** 2) / (distance + h_eff)
-
-
-# Power-law structural damping model.
-# Reference: https://pubmed.ncbi.nlm.nih.gov/12609908/
-# Equation (8)
-def pwl_damping_model(freq, A, B, alpha, beta, w0, split_indx):
     
-    if alpha > beta: alpha, beta = beta, alpha
-
-    G = np.zeros(freq.shape)
-
-    G[:split_indx] = A * np.cos(np.pi * alpha / 2) * (freq[:split_indx] / w0) ** alpha +\
-                     B * np.cos(np.pi * beta / 2) * (freq[:split_indx] / w0) ** beta
-
-    G[split_indx:] = A * np.sin(np.pi * alpha / 2) * (freq[split_indx:] / w0) ** alpha +\
-                     B * np.sin(np.pi * beta / 2) * (freq[split_indx:] / w0) ** beta
-
-    return G
-

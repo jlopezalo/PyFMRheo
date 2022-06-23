@@ -3,47 +3,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def preprocess_segment(segment, height_channel_key, deflection_sens, y0=None):
-    deflection_v = segment.segment_formated_data["vDeflection"]
-    if segment.segment_metadata["baseline_measured"]:
-        deflection_v = deflection_v - segment.segment_metadata["baseline"]
-    elif y0 is not None:
-        deflection_v = deflection_v - y0
-    deflection = deflection_v * deflection_sens
-    height = segment.segment_formated_data[height_channel_key]
-    time = segment.segment_formated_data["time"]
-
-    return deflection, height, time
-
-def get_force_vs_indentation_curve(piezo_height, deflection, poc, spring_constant):
-    """
-    Compute force vs indentation curve from deflection and piezo_height.
-
-    Indentation = piezo_height(m) − deflection(m) − (piezo_height(CP)(m) − deflection(CP)(m))
-    Force = Kc(N/m) * deflection(m)
-
-    Reference: doi: 10.1002/jemt.22776
-
-    Arguments:
-    piezo_height -- z position of the piezo in m
-    deflection -- deflection of the cantilever in m
-    poc -- point of contact in m
-    spring_constant -- spring constant of the cantilever in N/m
-
-    Returns:
-    List containing 2 arrays, where the first array is the indentation in m
-    and the second array is the force in N.
-    """
-    # Set the center position to 0, 0 and get a force curve
-    center_force_x = poc[0] - poc[1]
-    center_force_y = poc[1] * spring_constant
-
-    # Indentation = piezo_height(m) − deflection(m) − (piezo_height(CP)(m) − deflection(CP)(m))
-    # Force = Kc(N/m) * deflection(m)
-    return [np.array(piezo_height - deflection - center_force_x),
-            np.array(deflection * spring_constant - center_force_y)]
-
-
 def get_poc_RoV_method(piezo_height, deflection, win_size=20, plot_process=False, savepath="."):
     """
     Compute point of contact using the ratio of variances method.
@@ -73,7 +32,7 @@ def get_poc_RoV_method(piezo_height, deflection, win_size=20, plot_process=False
     win_size = n * (win_size/100)
 
     # Compute RoV for each point
-    for i in range(0, n):
+    for i in range(n):
       
       # Compute variances
       var_seg1 = np.var(deflection[i + 1 : i + int(np.round(win_size / 2))])

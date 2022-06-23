@@ -11,7 +11,7 @@ from jpkreader import load_jpk_file
 # Get data analysis tools
 from pyafmrheo.utils.force_curves import *
 from pyafmrheo.utils.signal_processing import *
-from pyafmrheo.models.rheology import ComputeBh
+from pyafmrheo.models.old.rheology import ComputeBh
 
 
 def doViscousDragMultiFreq(file_path, deflection_sensitivity=None, spring_constant=None, piezoCharData=None):

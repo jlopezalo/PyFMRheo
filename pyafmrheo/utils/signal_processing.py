@@ -83,3 +83,32 @@ def detrend_rolling_average(
       ntra_time = seg_time
 
     return ntra_in, ntra_out, ntra_time
+
+def TransferFunction(input_signal, output_signal, fs, frequency=None, nfft=None, freq_tol=0.0001):
+    # Define nfft
+    if not nfft:
+        nfft = len(output_signal)
+    # Compute deltat from sampling frequency
+    deltat = 1/fs
+    # Compute frequency vector
+    W = fftfreq(nfft, d=deltat)
+    # Compute fft of both signals
+    input_signal_hat = fft(input_signal, nfft)
+    output_signal_hat = fft(output_signal, nfft)
+    # Compute transfer function
+    G = output_signal_hat / input_signal_hat
+    # Compute coherence
+    coherence_params = {"fs": fs, "nperseg":nfft, "noverlap":0, "nfft":nfft, "detrend":False}
+    _, gamma2 = coherence(input_signal_hat, output_signal_hat, **coherence_params)
+    if frequency:
+        # Compute index where to find the frequency
+        idx = frequency / (1 / (deltat * nfft))
+        idx = int(np.round(idx))
+        # Check if the idx is at the right frequency
+        if not abs(frequency - W[idx]) <= freq_tol:
+            print(f"The frequency found at index {W[idx]} does not match with the frequency applied {frequency}")
+        
+        return W[idx], G[idx], gamma2[idx], input_signal_hat[idx], output_signal_hat[idx]
+    
+    else:
+        return W, G, gamma2, input_signal_hat, output_signal_hat
