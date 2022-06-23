@@ -105,7 +105,7 @@ class HertzModel:
             parameterBounds.append([0, 1]) # search bounds for slope
 
         # "seed" the numpy random number generator for repeatable results
-        result = differential_evolution(self.sumOfSquaredError, parameterBounds, args={'indentation': indentation, 'force': force, 'hertzmodel': hertzmodel}, seed=3)
+        result = differential_evolution(self.sumOfSquaredError, parameterBounds, args=(indentation, force, hertzmodel), seed=3)
         return result.x
 
     def fit(self, indentation, force, sample_height=None):
