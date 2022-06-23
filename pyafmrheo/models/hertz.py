@@ -153,14 +153,14 @@ class HertzModel:
     def eval(self, indentation, sample_height=None):
         return self.objective(indentation, self.delta0, self.E0, self.f0, self.slope, sample_height)
     
-    def get_residuals(self, x, y,  sample_height=None):
-        return y - self.eval(x, sample_height)
+    def get_residuals(self, indentation, force,  sample_height=None):
+        return force - self.eval(indentation, sample_height)
 
-    def get_chisq(self, x, y, sample_height=None):
-        return np.sum((self.get_residuals(x, y, sample_height)/np.std(y))**2)
+    def get_chisq(self, indentation, force, sample_height=None):
+        return np.sum((self.get_residuals(indentation, force, sample_height)**2/force)) 
     
-    def get_red_chisq(self, x, y, sample_height=None):
-        return self.get_chisq(x, y, sample_height) / self.n_params
+    def get_red_chisq(self, indentation, force, sample_height=None):
+        return self.get_chisq(indentation, force, sample_height) / self.n_params
     
     def fit_report(self):
         print(f"""
