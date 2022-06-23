@@ -188,9 +188,10 @@ class TingModel:
         # Param order:
         # delta0, E0, tc, betaE, f0
         p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
+        tm = time[np.argmax(F)]
         bounds = [
-            [self.E0_min, np.min(time), self.betaE_min, self.F0_min],
-            [self.E0_max, np.max(time), self.betaE_max, self.F0_max]
+            [self.E0_min, tm/3, self.betaE_min, self.F0_min],
+            [self.E0_max, tm, self.betaE_max, self.F0_max]
         ]
         fixed_params = {
             't0': self.t0,
@@ -206,7 +207,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(p0)
-        res, _ = curve_fit(tingmodel, time, F, p0)
+        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
         self.E0 = res[0]
