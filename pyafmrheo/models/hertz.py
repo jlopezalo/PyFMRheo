@@ -95,21 +95,24 @@ class HertzModel:
     def fit(self, indentation, force, sample_height=None):
         # If sample height is given, assign sample height
         self.sample_height = sample_height
+        # Define initial guess for E0
+        coeff, n = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
+        self.E0_init = coeff * (np.max(force) / np.power(np.max(indentation), n))
         # Param order:
         # delta0, E0, f0, slope
         if self.fit_hline_flag:
             p0 = [self.delta0_init, self.E0_init, self.f0_init, self.slope_init]
             bounds = [
-                [np.min(indentation), self.E0_min, np.min(force), self.slope_min],
-                [np.max(indentation), self.E0_max, np.max(force), self.slope_max]
+                [self.delta0_min, self.E0_min, self.f0_min, self.slope_min],
+                [self.delta0_max, self.E0_max, self.f0_max, self.slope_max]
             ]
             hertzmodel =\
              lambda indentation, delta0, E0, f0, slope: self.objective(indentation, delta0, E0, f0, slope, self.sample_height)
         else:
             p0 = [self.delta0_init, self.E0_init, self.f0_init]
             bounds = [
-                [np.min(indentation), self.E0_min, np.min(force)],
-                [np.max(indentation), self.E0_max, np.max(force)]
+                [self.delta0_min, self.E0_min, self.f0_min],
+                [self.delta0_max, self.E0_max, self.f0_max]
             ]
             hertzmodel =\
              lambda indentation, delta0, E0, f0: self.objective(indentation, delta0, E0, f0, self.slope, self.sample_height)
