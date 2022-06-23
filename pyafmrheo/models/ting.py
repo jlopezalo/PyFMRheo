@@ -45,6 +45,10 @@ class TingModel:
         self.poisson_ratio = 0.5
         # Viscous drag factor
         self.vdrag = 0
+        # Smooth window
+        self.smooth_w = None
+        # Moximum indentation time
+        self.idx_tm = None
 
     def SolveAnalytical(self, ttc, trc, t1, model_probe, geom_coeff, v0t, v0r, v0, E0, betaE, t0, F0, vdrag):
         # TO DO: ADD REFERENCE!!!
@@ -178,29 +182,33 @@ class TingModel:
         return np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
     
     def fit(self, time, F, delta, idx_tm=None, smooth_w=None):
-        # Use log to make params scale more equal during fit?
+        # Assing idx_tm and smooth_w
+        self.idx_tm = idx_tm
+        self.smooth_w = smooth_w
+        # Define initial guess for E0
+        coeff, n = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
+        self.E0_init = coeff * (np.max(F) / np.power(np.max(delta), n))
         # Param order:
-        # delta0, E0, f0, slope
+        # delta0, E0, tc, betaE, f0
         p0 = [self.t0_init, self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
-        self.n_params = len(p0)
         bounds = [
-            [self.t0_min, self.E0_min, self.betaE_min, self.F0_min],
-            [self.t0_max, self.E0_max, self.betaE_max, self.F0_max]
+            [self.t0_min, self.E0_min, self.tc_min, self.betaE_min, self.F0_min],
+            [self.t0_max, self.E0_max, self.tc_max, self.betaE_max, self.F0_max]
         ]
         fixed_params = {
             'F': F,
             'delta': delta,
             'modelFt': self.modelFt,
             'vdrag': self.vdrag,
-            'smooth_w': smooth_w,
-            'idx_tm': idx_tm
+            'smooth_w': self.smooth_w,
+            'idx_tm': self.idx_tm
         }
         tingmodel =\
             lambda time, t0, E0, tc, betaE, F0: self.objective(self, time, t0, E0, tc, betaE, F0, **fixed_params)
+        
         # Do fit
-        res, _ = curve_fit(
-            tingmodel, time, F, p0, bounds=bounds,
-            method='trf', ftol=1e-08, xtol=1e-08, gtol=1e-08)
+        self.n_params = len(p0)
+        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
         self.t0 = res[0]
@@ -209,18 +217,55 @@ class TingModel:
         self.betaE = res[3]
         self.F0 = res[4]
         
-        # Get goodness of fit params
-        redchi = self.get_red_chisq(time, F, delta, idx_tm, smooth_w)
+        modelPredictions = self.eval(time, F, delta, idx_tm, smooth_w)
 
-        return res, redchi
+        absError = modelPredictions - F
+
+        self.MAE = np.mean(absError) # mean absolute error
+        self.SE = np.square(absError) # squared errors
+        self.MSE = np.mean(self.SE) # mean squared errors
+        self.RMSE = np.sqrt(self.MSE) # Root Mean Squared Error, RMSE
+        self.Rsquared = 1.0 - (np.var(absError) / np.var(F))
+        
+        # Get goodness of fit params
+        self.chisq = self.get_chisq(time, F, delta, idx_tm, smooth_w)
+        self.redchi = self.get_red_chisq(time, F, delta, idx_tm, smooth_w)
 
     def eval(self, time, F, delta, idx_tm=None, smooth_w=None):
         return self.objective(
             time, self.t0, self.E0, self.tc, self.betaE, self.F0, F, delta,
             self.ind_geom, self.modelFt, self.vdrag, idx_tm, smooth_w)
 
-    def get_chisq(self, time, F, delta, y, idx_tm=None, smooth_w=None):
-        return np.sum(((y - self.eval(time, F, delta, idx_tm, smooth_w))/np.std(y))**2)
+    def get_residuals(self, time, F, delta, idx_tm=None, smooth_w=None):
+        return F - self.eval(time, F, delta, idx_tm, smooth_w)
+
+    def get_chisq(self, time, F, delta, idx_tm=None, smooth_w=None):
+        return np.sum((self.get_residuals(time, F, delta, idx_tm, smooth_w)**2/F)) 
     
-    def get_red_chisq(self, time, F, delta, y, idx_tm=None, smooth_w=None):
-        return self.get_chisq(time, F, delta, y, idx_tm, smooth_w) / self.n_params
+    def get_red_chisq(self, time, F, delta, idx_tm=None, smooth_w=None):
+        return self.get_chisq(time, F, delta, idx_tm, smooth_w) / self.n_params
+    
+    def fit_report(self):
+        print(f"""
+        # Fit parameters
+        Indenter shape: {self.ind_geom}\n
+        Tip paraneter: {self.tip_parameter}\n
+        Model Format: {self.modelFt}\n
+        Viscous Drag: {self.vdrag}\n
+        Smooth Window: {self.smooth_w}\n
+        Maximum Indentation Time: {self.idx_tm}\n
+        Number of free parameters: {self.n_params}\n
+        t0: {self.t0}\n
+        E0: {self.E0}\n
+        tc: {self.tc}\n
+        betaE: {self.betaE}\n
+        F0: {self.F0}\n
+        # Fit metrics
+        MAE: {self.MAE}\n
+        MSE: {self.MSE}\n
+        RMSE: {self.RMSE}\n
+        Rsq: {self.Rsquared}\n
+        Chisq: {self.chisq}\n
+        RedChisq: {self.redchi}\n
+        """
+        )
