@@ -184,13 +184,13 @@ class TingModel:
         # Define initial guess for E0
         # Normalization to improve the fit quality
         coeff, n = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
-        self.E0_init = (coeff * (np.max(F) / np.power(np.max(delta), n)))
+        self.E0_init = 1000
         # Param order:
         # delta0, E0, tc, betaE, f0
         p0 = [np.log10(self.E0_init), self.tc_init, self.betaE_init, self.F0_init]
         bounds = [
-            [np.log10(self.E0_min), np.min(time), self.betaE_min, self.F0_min],
-            [np.log10(self.E0_max), np.max(time), self.betaE_max, self.F0_max]
+            [self.E0_min, np.min(time), self.betaE_min, self.F0_min],
+            [self.E0_max, np.max(time), self.betaE_max, self.F0_max]
         ]
         fixed_params = {
             't0': self.t0,
@@ -209,7 +209,7 @@ class TingModel:
         res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
-        self.E0 = 10**res[0]
+        self.E0 = res[0]
         self.tc = res[1]
         self.betaE = res[2]
         self.F0 = res[3]
