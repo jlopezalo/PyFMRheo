@@ -100,7 +100,7 @@ class HertzModel:
         return np.sum((force - val) ** 2.0)
     
     def generate_Initial_Parameters(self, indentation, force, hertzmodel):
-        parameterBounds = [[np.min(indentation), np.max(indentation)], [0, 1e12], [np.min(force), np.max(force)]]
+        parameterBounds = [[np.min(indentation), np.max(indentation)], [0, 1e6], [np.min(force), np.max(force)]]
         if self.fit_hline_flag:
             parameterBounds.append([0, 1]) # search bounds for slope
 
