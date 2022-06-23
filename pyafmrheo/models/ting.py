@@ -234,7 +234,7 @@ class TingModel:
     def eval(self, time, F, delta, idx_tm=None, smooth_w=None):
         return self.objective(
             time, self.t0, self.E0, self.tc, self.betaE, self.F0, F, delta,
-            self.ind_geom, self.modelFt, self.vdrag, idx_tm, smooth_w)
+            self.modelFt, self.vdrag, idx_tm, smooth_w)
 
     def get_residuals(self, time, F, delta, idx_tm=None, smooth_w=None):
         return F - self.eval(time, F, delta, idx_tm, smooth_w)
