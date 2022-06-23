@@ -224,8 +224,8 @@ class TingModel:
         self.Rsquared = 1.0 - (np.var(absError) / np.var(F))
         
         # Get goodness of fit params
-        self.chisq = self.get_chisq(time, F, delta, idx_tm, smooth_w)
-        self.redchi = self.get_red_chisq(time, F, delta, idx_tm, smooth_w)
+        self.chisq = self.get_chisq(time, F, delta, t0, idx_tm, smooth_w)
+        self.redchi = self.get_red_chisq(time, F, delta, t0, idx_tm, smooth_w)
 
     def eval(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
         return self.objective(
