@@ -186,7 +186,7 @@ class TingModel:
         p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
         tm = time[np.argmax(F)]
         bounds = [
-            [self.E0_min, tm/3, self.betaE_min, self.F0_min],
+            [self.E0_min, np.min(time), self.betaE_min, self.F0_min],
             [self.E0_max, tm, self.betaE_max, self.F0_max]
         ]
         fixed_params = {
