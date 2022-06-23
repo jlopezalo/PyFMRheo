@@ -18,7 +18,6 @@ class HertzModel:
         # Compiutation params
         self.fit_hline_flag = False
         self.apply_bec_flag = False
-        self.bec_model = None
         # Model params #####################
         self.n_params = None
         # Contact point
@@ -70,7 +69,7 @@ class HertzModel:
         # Get indenter shape coefficient and exponent
         coeff, n = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Get bottom effect correction coefficients
-        if bec_model and sample_height:
+        if self.bec_model and sample_height:
             bec_coeffs = self.get_bec_coeffs(sample_height, indentation)
         else:
             bec_coeffs = np.ones(indentation.shape)
