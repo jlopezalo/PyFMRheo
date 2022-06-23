@@ -187,7 +187,7 @@ class TingModel:
         self.E0_init = 1000
         # Param order:
         # delta0, E0, tc, betaE, f0
-        p0 = [np.log10(self.E0_init), self.tc_init, self.betaE_init, self.F0_init]
+        p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
         bounds = [
             [self.E0_min, np.min(time), self.betaE_min, self.F0_min],
             [self.E0_max, np.max(time), self.betaE_max, self.F0_max]
