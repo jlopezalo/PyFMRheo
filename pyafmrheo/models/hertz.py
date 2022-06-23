@@ -44,6 +44,8 @@ class HertzModel:
         self.slope_max = np.inf
         # Poisson ratio
         self.poisson_ratio = 0.5
+        # Sample height
+        self.sample_height = None
     
     def get_bec_coeffs(self, sample_height, indentation):
         bec_params = [sample_height, (indentation - self.delta0), self.indenter_shape, self.tip_parameter]
@@ -92,33 +94,34 @@ class HertzModel:
     
 
     # function for genetic algorithm to minimize (sum of squared error)
-    def sumOfSquaredError(self, xData, yData, parameterTuple):
+    def sumOfSquaredError(self, parameterTuple, indentation, force, hertzmodel):
         warnings.filterwarnings("ignore") # do not print warnings by genetic algorithm
-        val = self.objective(xData, *parameterTuple)
-        return np.sum((yData - val) ** 2.0)
+        val = hertzmodel(indentation, *parameterTuple)
+        return np.sum((force - val) ** 2.0)
     
-    def generate_Initial_Parameters(self, indentation, force):
+    def generate_Initial_Parameters(self, indentation, force, hertzmodel):
         parameterBounds = [[np.min(indentation), np.max(indentation)], [0, 1e12], [np.min(force), np.max(force)]]
         if self.fit_hline_flag:
             parameterBounds.append([0, 1]) # search bounds for slope
 
         # "seed" the numpy random number generator for repeatable results
-        result = differential_evolution(self.sumOfSquaredError, parameterBounds, seed=3)
+        result = differential_evolution(self.sumOfSquaredError, parameterBounds, args={'indentation': indentation, 'force': force, 'hertzmodel': hertzmodel}, seed=3)
         return result.x
 
     def fit(self, indentation, force, sample_height=None):
         # Use log to make params scale more equal during fit?
         # Param order:
         # delta0, E0, f0, slope
+        self.sample_height = sample_height
         if self.fit_hline_flag:
             hertzmodel =\
-             lambda indentation, delta0, E0, f0, slope: self.objective(indentation, delta0, E0, f0, slope, sample_height)
+             lambda indentation, delta0, E0, f0, slope: self.objective(indentation, delta0, E0, f0, slope, self.sample_height)
         else:
             hertzmodel =\
-             lambda indentation, delta0, E0, f0: self.objective(indentation, delta0, E0, f0, self.slope, sample_height)
+             lambda indentation, delta0, E0, f0: self.objective(indentation, delta0, E0, f0, self.slope, self.sample_height)
         
         # Do fit
-        p0 = self.generate_Initial_Parameters(indentation, force)
+        p0 = self.generate_Initial_Parameters(indentation, force, hertzmodel)
         res, _ = curve_fit(hertzmodel, indentation, force, p0)
 
         # Assign fit results to model params
