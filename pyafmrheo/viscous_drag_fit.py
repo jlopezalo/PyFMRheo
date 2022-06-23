@@ -1,6 +1,6 @@
 from lmfit import Model, Parameters
 
-from .models.old.rheology import drag_sphere_model
+from .models.rheology import drag_sphere_model
 
 def ViscousDragFit(distance, Bh, eta, p0):
     

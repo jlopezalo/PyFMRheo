@@ -40,7 +40,7 @@ class DoublePowerLawModel:
     def fit(self, freq, G, w0, split_indx):
         p0 = [self.A_init, self.B_init, self.alpha_init, self.beta_init]
         bounds = [
-            [self.A_min, self.B_min, self.alpha_min, self.beta_min]
+            [self.A_min, self.B_min, self.alpha_min, self.beta_min],
             [self.A_max, self.B_max, self.alpha_max, self.beta_max]
         ]
         double_pwl_model =\
@@ -48,7 +48,7 @@ class DoublePowerLawModel:
 
         # Do fit
         res, _ = curve_fit(
-            double_pwl_model, freq, G, p0, bounds,
+            double_pwl_model, freq, G, p0, bounds=bounds,
             method='trf', ftol=1e-08, xtol=1e-08, gtol=1e-08)
 
         # Assign fit results to model params

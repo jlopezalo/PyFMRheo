@@ -11,7 +11,7 @@ from jpkreader import load_jpk_file
 from pyafmrheo.utils.force_curves import *
 from pyafmrheo.utils.signal_processing import *
 from pyafmrheo.hertz_fit import HertzFit
-from pyafmrheo.models.old.rheology import ComputeBh
+from pyafmrheo.models.rheology import ComputeBh
 
 def doViscousDragSteps(file_path, deflection_sensitivity=None, spring_constant=None, piezoCharData=None):
 

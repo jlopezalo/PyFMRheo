@@ -114,7 +114,7 @@ class HertzModel:
         
         # Do fit
         res, _ = curve_fit(
-            hertzmodel, indentation, force, p0, bounds,
+            hertzmodel, indentation, force, p0, bounds=bounds,
             method='trf', ftol=1e-08, xtol=1e-08, gtol=1e-08)
 
         # Assign fit results to model params

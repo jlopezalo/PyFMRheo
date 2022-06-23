@@ -199,7 +199,7 @@ class TingModel:
             lambda time, t0, E0, tc, betaE, F0: self.objective(self, time, t0, E0, tc, betaE, F0, **fixed_params)
         # Do fit
         res, _ = curve_fit(
-            tingmodel, time, F, p0, bounds,
+            tingmodel, time, F, p0, bounds=bounds,
             method='trf', ftol=1e-08, xtol=1e-08, gtol=1e-08)
 
         # Assign fit results to model params

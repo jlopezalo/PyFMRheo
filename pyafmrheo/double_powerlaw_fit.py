@@ -1,7 +1,7 @@
 from lmfit import Model, Parameters
 import numpy as np
 
-from .models.old.rheology import pwl_damping_model
+from .models.rheology import pwl_damping_model
 
 def DoublePWLFit(frequencies, G, w0, p0):
 
