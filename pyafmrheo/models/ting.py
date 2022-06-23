@@ -210,7 +210,7 @@ class TingModel:
         res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
-        self.E0 = res[0]
+        self.E0 = res[0] * NF
         self.tc = res[1]
         self.betaE = res[2]
         self.F0 = res[3]
