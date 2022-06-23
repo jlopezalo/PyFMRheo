@@ -118,7 +118,7 @@ class HertzModel:
              lambda indentation, delta0, E0, f0: self.objective(indentation, delta0, E0, f0, self.slope, sample_height)
         
         # Do fit
-        p0 = self.generate_Initial_Parameters()
+        p0 = self.generate_Initial_Parameters(indentation, force)
         res, _ = curve_fit(hertzmodel, indentation, force, p0)
 
         # Assign fit results to model params
