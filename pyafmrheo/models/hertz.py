@@ -122,6 +122,7 @@ class HertzModel:
         
         # Do fit
         p0 = self.generate_Initial_Parameters(indentation, force, hertzmodel)
+        self.n_params = len(p0)
         res, _ = curve_fit(hertzmodel, indentation, force, p0)
 
         # Assign fit results to model params
