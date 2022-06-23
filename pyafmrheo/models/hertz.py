@@ -100,9 +100,9 @@ class HertzModel:
         return np.sum((force - val) ** 2.0)
     
     def generate_Initial_Parameters(self, indentation, force, hertzmodel):
-        parameterBounds = [[np.min(indentation), np.max(indentation)], [0, 1e6], [np.min(force), np.max(force)]]
+        parameterBounds = [[np.min(indentation), np.max(indentation)], [self.E0_min, self.E0_max], [np.min(force), np.max(force)]]
         if self.fit_hline_flag:
-            parameterBounds.append([0, 1]) # search bounds for slope
+            parameterBounds.append([self.slope_min, self.slope_max]) # search bounds for slope
 
         # "seed" the numpy random number generator for repeatable results
         result = differential_evolution(self.sumOfSquaredError, parameterBounds, args=(indentation, force, hertzmodel), seed=3)
