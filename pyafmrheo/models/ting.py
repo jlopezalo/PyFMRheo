@@ -213,7 +213,7 @@ class TingModel:
         self.betaE = res[2]
         self.F0 = res[3]
         
-        modelPredictions = self.eval(time, F, delta, idx_tm, smooth_w)
+        modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w)
 
         absError = modelPredictions - F
 
