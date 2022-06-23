@@ -184,7 +184,7 @@ class TingModel:
         # Define initial guess for E0
         # Normalization to improve the fit quality
         coeff, n = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
-        self.E0_init = 1000
+        self.E0_init = coeff * (np.max(F) / np.power(np.max(delta), n))
         # Param order:
         # delta0, E0, tc, betaE, f0
         p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
