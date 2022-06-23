@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.optimize import curve_fit
+from scipy.optimize import differential_evolution
+import warnings
 
 from .bec import (
     bec_dimitriadis_paraboloid_bonded, bec_dimitriadis_paraboloid_not_bonded, 
@@ -87,32 +89,37 @@ class HertzModel:
                 # F = F0 * BEC_Correction
                 force[i] = coeff * bec_coeffs[i] * E0 * np.power((indentation[i] - delta0), n) + f0
         return force
+    
+
+    # function for genetic algorithm to minimize (sum of squared error)
+    def sumOfSquaredError(self, xData, yData, parameterTuple):
+        warnings.filterwarnings("ignore") # do not print warnings by genetic algorithm
+        val = self.objective(xData, *parameterTuple)
+        return np.sum((yData - val) ** 2.0)
+    
+    def generate_Initial_Parameters(self):
+        parameterBounds = [[self.delta0_min, self.delta0_max], [self.E0_min, self.E0_max], [self.f0_min, self.f0_max]]
+        if self.fit_hline_flag:
+            parameterBounds.append([self.slope_min, self.slope_max]) # search bounds for slope
+
+        # "seed" the numpy random number generator for repeatable results
+        result = differential_evolution(self.umOfSquaredError, parameterBounds, seed=3)
+        return result.x
 
     def fit(self, indentation, force, sample_height=None):
         # Use log to make params scale more equal during fit?
         # Param order:
         # delta0, E0, f0, slope
         if self.fit_hline_flag:
-            p0 = [self.delta0_init, self.E0_init, self.f0_init, self.slope_init]
-            self.n_params = len(p0)
-            bounds = [
-                [self.delta0_min, self.E0_min, self.f0_min, self.slope_min],
-                [self.delta0_max, self.E0_max, self.f0_max, self.slope_max]
-            ]
             hertzmodel =\
              lambda indentation, delta0, E0, f0, slope: self.objective(indentation, delta0, E0, f0, slope, sample_height)
         else:
-            p0 = [self.delta0_init, self.E0_init, self.f0_init]
-            self.n_params = len(p0)
-            bounds = [
-                [self.delta0_min, self.E0_min, self.f0_min],
-                [self.delta0_max, self.E0_max, self.f0_max]
-            ]
             hertzmodel =\
              lambda indentation, delta0, E0, f0: self.objective(indentation, delta0, E0, f0, self.slope, sample_height)
         
         # Do fit
-        res, _ = curve_fit(hertzmodel, indentation, force, p0, bounds=bounds)
+        p0 = self.generate_Initial_Parameters()
+        res, _ = curve_fit(hertzmodel, indentation, force, p0)
 
         # Assign fit results to model params
         self.delta0 = res[0]
@@ -120,6 +127,16 @@ class HertzModel:
         self.f0 = res[2]
         if self.fit_hline_flag:
             self.slope = res[3]
+        
+        modelPredictions = self.eval(indentation, sample_height)
+
+        absError = modelPredictions - force
+
+        MAE = np.mean(absError) # mean absolute error
+        SE = np.square(absError) # squared errors
+        MSE = np.mean(SE) # mean squared errors
+        RMSE = np.sqrt(MSE) # Root Mean Squared Error, RMSE
+        Rsquared = 1.0 - (np.var(absError) / np.var(force))
         
         # Get goodness of fit params
         redchi = self.get_red_chisq(indentation, force)
