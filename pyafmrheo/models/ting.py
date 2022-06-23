@@ -16,11 +16,8 @@ class TingModel:
         self.bec_model = None
         # Model params #####################
         self.n_params = None
-        # Contact point
+        # Scaling time
         self.t0 = 0
-        self.t0_init = 0
-        self.t0_min = -np.inf
-        self.t0_max = np.inf
         # Apparent Young's Modulus
         self.E0 = 1000
         self.E0_init = 1000
@@ -29,8 +26,6 @@ class TingModel:
         # Time of contact
         self.tc = 0
         self.tc_init = 0
-        self.tc_min = -np.inf
-        self.tc_max = np.inf
         # Fluidity exponent
         self.betaE = 0.2
         self.betaE_init = 0.2
@@ -107,7 +102,7 @@ class TingModel:
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
-    def objective(self, time, t0, E0, tc, betaE, F0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
+    def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
         # Get indenter shape coefficient and exponent
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
@@ -124,8 +119,6 @@ class TingModel:
         # Determine contact trace region
         idxCt=np.where(time>=0)[0]
         # Get indices corresponding to contact trace region.
-        if len(idxCt) == 0:
-            return
         # Including t max.
         idxCt = np.arange(idxCt[0], idx_tm + 1)
         # Determine contact time trace.
@@ -183,8 +176,9 @@ class TingModel:
         # Concatenate non contact regions to the contact region. And return.
         return np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
     
-    def fit(self, time, F, delta, idx_tm=None, smooth_w=None):
+    def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
         # Assing idx_tm and smooth_w
+        self.t0 = t0
         self.idx_tm = idx_tm
         self.smooth_w = smooth_w
         # Define initial guess for E0
@@ -192,12 +186,13 @@ class TingModel:
         self.E0_init = coeff * (np.max(F) / np.power(np.max(delta), n))
         # Param order:
         # delta0, E0, tc, betaE, f0
-        p0 = [self.t0_init, self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
+        p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
         bounds = [
-            [self.t0_min, self.E0_min, self.tc_min, self.betaE_min, self.F0_min],
-            [self.t0_max, self.E0_max, self.tc_max, self.betaE_max, self.F0_max]
+            [self.E0_min, np.min(time), self.betaE_min, self.F0_min],
+            [self.E0_max, np.max(time), self.betaE_max, self.F0_max]
         ]
         fixed_params = {
+            't0': self.t0,
             'F': F,
             'delta': delta,
             'modelFt': self.modelFt,
@@ -206,18 +201,17 @@ class TingModel:
             'idx_tm': self.idx_tm
         }
         tingmodel =\
-            lambda time, t0, E0, tc, betaE, F0: self.objective(time, t0, E0, tc, betaE, F0, **fixed_params)
+            lambda time, E0, tc, betaE, F0: self.objective(time, E0, tc, betaE, F0, **fixed_params)
         
         # Do fit
         self.n_params = len(p0)
         res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
-        self.t0 = res[0]
-        self.E0 = res[1]
-        self.tc = res[2]
-        self.betaE = res[3]
-        self.F0 = res[4]
+        self.E0 = res[0]
+        self.tc = res[1]
+        self.betaE = res[2]
+        self.F0 = res[3]
         
         modelPredictions = self.eval(time, F, delta, idx_tm, smooth_w)
 
@@ -233,19 +227,19 @@ class TingModel:
         self.chisq = self.get_chisq(time, F, delta, idx_tm, smooth_w)
         self.redchi = self.get_red_chisq(time, F, delta, idx_tm, smooth_w)
 
-    def eval(self, time, F, delta, idx_tm=None, smooth_w=None):
+    def eval(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
         return self.objective(
-            time, self.t0, self.E0, self.tc, self.betaE, self.F0, F, delta,
+            time, self.E0, self.tc, self.betaE, self.F0, t0, F, delta,
             self.modelFt, self.vdrag, idx_tm, smooth_w)
 
-    def get_residuals(self, time, F, delta, idx_tm=None, smooth_w=None):
-        return F - self.eval(time, F, delta, idx_tm, smooth_w)
+    def get_residuals(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
+        return F - self.eval(time, F, delta, t0,idx_tm, smooth_w)
 
-    def get_chisq(self, time, F, delta, idx_tm=None, smooth_w=None):
-        return np.sum((self.get_residuals(time, F, delta, idx_tm, smooth_w)**2/F)) 
+    def get_chisq(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
+        return np.sum((self.get_residuals(time, F, delta, t0, idx_tm, smooth_w)**2/F)) 
     
-    def get_red_chisq(self, time, F, delta, idx_tm=None, smooth_w=None):
-        return self.get_chisq(time, F, delta, idx_tm, smooth_w) / self.n_params
+    def get_red_chisq(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
+        return self.get_chisq(time, F, delta, t0, idx_tm, smooth_w) / self.n_params
     
     def fit_report(self):
         print(f"""
@@ -255,9 +249,9 @@ class TingModel:
         Model Format: {self.modelFt}\n
         Viscous Drag: {self.vdrag}\n
         Smooth Window: {self.smooth_w}\n
+        t0: {self.t0}\n
         Maximum Indentation Time: {self.idx_tm}\n
         Number of free parameters: {self.n_params}\n
-        t0: {self.t0}\n
         E0: {self.E0}\n
         tc: {self.tc}\n
         betaE: {self.betaE}\n
