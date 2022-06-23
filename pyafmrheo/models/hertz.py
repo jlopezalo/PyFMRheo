@@ -112,9 +112,7 @@ class HertzModel:
              lambda indentation, delta0, E0, f0: self.objective(indentation, delta0, E0, f0, self.slope, sample_height)
         
         # Do fit
-        res, _ = curve_fit(
-            hertzmodel, indentation, force, p0, bounds=bounds,
-            method='trf', ftol=1e-08, xtol=1e-08, gtol=1e-08)
+        res, _ = curve_fit(hertzmodel, indentation, force, p0, bounds=bounds)
 
         # Assign fit results to model params
         self.delta0 = res[0]
