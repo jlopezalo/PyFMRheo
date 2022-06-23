@@ -204,7 +204,7 @@ class TingModel:
             'idx_tm': self.idx_tm
         }
         tingmodel =\
-            lambda time, t0, E0, tc, betaE, F0: self.objective(self, time, t0, E0, tc, betaE, F0, **fixed_params)
+            lambda time, t0, E0, tc, betaE, F0: self.objective(time, t0, E0, tc, betaE, F0, **fixed_params)
         
         # Do fit
         self.n_params = len(p0)
