@@ -97,10 +97,10 @@ class HertzModel:
         val = self.objective(xData, *parameterTuple)
         return np.sum((yData - val) ** 2.0)
     
-    def generate_Initial_Parameters(self):
-        parameterBounds = [[self.delta0_min, self.delta0_max], [self.E0_min, self.E0_max], [self.f0_min, self.f0_max]]
+    def generate_Initial_Parameters(self, indentation, force):
+        parameterBounds = [[np.min(indentation), np.max(indentation)], [0, 1e12], [np.min(force), np.max(force)]]
         if self.fit_hline_flag:
-            parameterBounds.append([self.slope_min, self.slope_max]) # search bounds for slope
+            parameterBounds.append([0, 1]) # search bounds for slope
 
         # "seed" the numpy random number generator for repeatable results
         result = differential_evolution(self.sumOfSquaredError, parameterBounds, seed=3)
