@@ -154,7 +154,8 @@ class HertzModel:
         return force - self.eval(indentation, sample_height)
 
     def get_chisq(self, indentation, force, sample_height=None):
-        return np.sum((self.get_residuals(indentation, force, sample_height)**2/force).replace(np.inf, 0, inplace=True))
+        a = (self.get_residuals(indentation, force, sample_height)**2/force)
+        return np.sum(a[np.isfinite(a)])
     
     def get_red_chisq(self, indentation, force, sample_height=None):
         return self.get_chisq(indentation, force, sample_height) / self.n_params
