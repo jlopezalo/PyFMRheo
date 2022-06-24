@@ -48,8 +48,7 @@ class DoublePowerLawModel:
 
         # Do fit
         res, _ = curve_fit(
-            double_pwl_model, freq, G, p0, bounds=bounds,
-            method='trf', ftol=1e-08, xtol=1e-08, gtol=1e-08)
+            double_pwl_model, freq, G, p0, bounds=bounds)
 
         # Assign fit results to model params
         self.A = res[0]

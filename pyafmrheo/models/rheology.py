@@ -90,7 +90,7 @@ def ComputeComplexModulus(
 
     # Get indentation and force
     indentation = zheight - deflection - (poc[0] - poc[1])
-    force = deflection * k
+    force = deflection * k - (poc[1] * k)
 
     # Compute transfer function
     _, G, gamma2, _, _ =\
@@ -113,7 +113,7 @@ def ComputeBh(
 
     # Get indentation and force
     indentation = zheight - deflection - (poc[0] - poc[1])
-    force = deflection * k
+    force = deflection * k - (poc[1] * k)
 
     # Compute Hd(f)=F(f)/δ(f)e-φ
     _, G, gamma2, _, _ =\

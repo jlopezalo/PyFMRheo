@@ -32,8 +32,7 @@ class DragSphereModel:
         
         # Do fit
         res, _ = curve_fit(
-            drag_sphere_model, distance, Bh, p0, bounds=bounds,
-            method='trf', ftol=1e-08, xtol=1e-08, gtol=1e-08)
+            drag_sphere_model, distance, Bh, p0, bounds=bounds)
         
         # Assign fit results to model params
         self.a_eff = res[0]
