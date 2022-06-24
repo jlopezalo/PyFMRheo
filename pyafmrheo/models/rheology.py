@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.signal import coherence
 from scipy.fft import fft, fftfreq
-from ..utils.force_curves import get_force_vs_indentation_curve
 
 def model_pyramid(G, wc, half_angle, freq, fi, bcoef, poisson_ratio):
     # Model for pyramidal indenter.
@@ -85,9 +84,13 @@ def ComputeComplexModulus(
     wc, poisson_ratio=0.5, fi=0, amp_quotient=1, bcoef=0, nfft=None, freq_tol=0.0001
 ):  
 
+    # Correct zheight based on amplitude quotient
+    # obtained from piezo characterization routine
     zheight = zheight * amp_quotient
 
-    indentation, force = get_force_vs_indentation_curve(zheight, deflection, poc, k)
+    # Get indentation and force
+    indentation = zheight - deflection - (poc[0] - poc[1])
+    force = deflection * k
 
     # Compute transfer function
     _, G, gamma2, _, _ =\
@@ -104,9 +107,13 @@ def ComputeBh(
     deflection, zheight, poc, k, fs, freq, fi=0, amp_quotient=1, nfft=None, freq_tol=0.0001
 ):  
 
+    # Correct zheight based on amplitude quotient
+    # obtained from piezo characterization routine
     zheight = zheight * amp_quotient
 
-    indentation, force = get_force_vs_indentation_curve(zheight, deflection, poc, k)
+    # Get indentation and force
+    indentation = zheight - deflection - (poc[0] - poc[1])
+    force = deflection * k
 
     # Compute Hd(f)=F(f)/δ(f)e-φ
     _, G, gamma2, _, _ =\
