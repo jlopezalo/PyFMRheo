@@ -234,7 +234,8 @@ class TingModel:
         return F - self.eval(time, F, delta, t0,idx_tm, smooth_w)
 
     def get_chisq(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
-        return np.sum((self.get_residuals(time, F, delta, t0, idx_tm, smooth_w)**2/F)) 
+        a = (self.get_residuals(time, F, delta, t0, idx_tm, smooth_w)**2/F)
+        return np.sum(a[np.isfinite(a)])
     
     def get_red_chisq(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
         return self.get_chisq(time, F, delta, t0, idx_tm, smooth_w) / self.n_params
