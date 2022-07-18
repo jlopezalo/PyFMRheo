@@ -102,6 +102,31 @@ def ComputeComplexModulus(
 
     return G_storage, G_loss, gamma2
 
+def ComputeComplexSine(
+    A_defl, A_ind, wc, dPhi, freq, ind_shape,
+    tip_parameter, k, poisson_ratio=0.5, amp_quotient=1, bh0=0
+):  
+    # Correct indentation amplitude based on amplitude quotient
+    # obtained from piezo characterization routine
+    A_ind = A_ind * amp_quotient
+
+    if ind_shape == "cone":
+        n = 2
+        A_lambda = 2 / np.pi * np.tan(np.radians(tip_parameter))
+        G = complex(k * A_defl / A_ind  * np.cos(dPhi),  k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bh0 )
+        return G  * ( ( 1 - poisson_ratio**2 ) / ( n * A_lambda * wc**(n-1) ) )
+    elif ind_shape == "paraboloid":
+        n = 3/2
+        A_lambda = 4 / 3 * np.sqrt(tip_parameter)
+        G = complex( k * A_defl / A_ind  * np.cos(dPhi),  k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bh0 )
+        # print(G)
+        return G  * ( ( 1 - poisson_ratio**2 ) / ( n * A_lambda * wc**(n-1) )  )
+    elif ind_shape == "pyramid":
+        n = 2
+        A_lambda = 4 / ( 3 * np.sqrt(3) ) * np.tan(np.radians(tip_parameter))
+        G = complex( k * A_defl / A_ind  * np.cos(dPhi ),  k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bh0 )
+        return G  * ( ( 1 - poisson_ratio**2 ) / ( n * A_lambda * wc**(n-1) )  )
+
 
 def ComputeBh(
     deflection, zheight, poc, k, fs, freq, fi=0, amp_quotient=1, nfft=None, freq_tol=0.0001
