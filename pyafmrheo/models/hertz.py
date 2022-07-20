@@ -1,7 +1,5 @@
 import numpy as np
 from scipy.optimize import curve_fit
-from scipy.optimize import differential_evolution
-import warnings
 
 from .bec import (
     bec_dimitriadis_paraboloid_bonded, bec_dimitriadis_paraboloid_not_bonded, 
