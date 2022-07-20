@@ -8,8 +8,7 @@ setup(
     version= "0.0.1",
     description=None,
     package_dir={'pyafmrheo': 'pyafmrheo'},
-    install_requires=["lmfit>=1",
-                      "numpy>=1.22",  # cython build
+    install_requires=["numpy",
                       "pandas",
                       "scipy"
                       ],
