@@ -1,3 +1,4 @@
+from pickle import NONE
 import numpy as np
 from scipy.special import hyp2f1, gamma
 from scipy.optimize import curve_fit
@@ -21,7 +22,7 @@ class TingModel:
         # Apparent Young's Modulus
         self.E0 = 1000
         self.E0_init = 1000
-        self.E0_min = -np.inf
+        self.E0_min = 0
         self.E0_max = np.inf
         # Time of contact
         self.tc = 0
@@ -97,7 +98,9 @@ class TingModel:
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
-    def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
+    def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None, NF=None):
+        # E0
+        E0 *= NF
         # Get indenter shape coefficient and exponent
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
@@ -178,7 +181,8 @@ class TingModel:
         self.smooth_w = smooth_w
         # Param order:
         # delta0, E0, tc, betaE, f0
-        p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
+        NF = (max(F)-min(F))/10
+        p0 = [self.E0_init/NF, self.tc_init, self.betaE_init, self.F0_init]
         bounds = [
              [self.E0_min, np.min(time), self.betaE_min, self.F0_min],
              [self.E0_max, np.max(time), self.betaE_max, self.F0_max]
@@ -190,7 +194,8 @@ class TingModel:
             'modelFt': self.modelFt,
             'vdrag': self.vdrag,
             'smooth_w': self.smooth_w,
-            'idx_tm': self.idx_tm
+            'idx_tm': self.idx_tm,
+            'NF': NF
         }
         tingmodel =\
             lambda time, E0, tc, betaE, F0: self.objective(time, E0, tc, betaE, F0, **fixed_params)
@@ -200,7 +205,7 @@ class TingModel:
         res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
-        self.E0 = res[0]
+        self.E0 = res[0] * NF
         self.tc = res[1]
         self.betaE = res[2]
         self.F0 = res[3]
