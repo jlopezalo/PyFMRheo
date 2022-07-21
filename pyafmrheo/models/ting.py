@@ -207,6 +207,8 @@ class TingModel:
         self.tc = res[1]
         self.betaE = res[2]
         self.F0 = res[3] * NF
+
+        F = F*NF
         
         modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w)
 
