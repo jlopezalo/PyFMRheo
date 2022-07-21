@@ -180,10 +180,10 @@ class TingModel:
         # Param order:
         # delta0, E0, tc, betaE, f0
         p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
-        bounds = [
-             [self.E0_init*0.001, np.min(time), self.betaE_min, self.F0_min],
-             [self.E0_init*1e5, np.max(time), self.betaE_max, self.F0_max]
-        ]
+        # bounds = [
+        #      [self.E0_init*0.001, np.min(time), self.betaE_min, self.F0_min],
+        #      [self.E0_init*1e5, np.max(time), self.betaE_max, self.F0_max]
+        # ]
         fixed_params = {
             't0': self.t0,
             'F': F,
