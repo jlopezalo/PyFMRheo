@@ -155,16 +155,19 @@ class TingModel:
         # Assign the value of F0 to the non contact region.
         FtNC=F0*np.ones(idxNCt.size)
         # Compute Force according to the selected mode:
-        if modelFt == 'analytical':
-            FJ = self.SolveAnalytical(
-                ttc, trc, t1, self.ind_geom, geom_coeff, v0t, v0r, v0, E0, betaE, t0, F0, vdrag
-            )
-        elif modelFt == 'numerical':
-            FJ = self.SolveNumerical(
-                delta, time, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr
-            )
-        else:
-            print(f'The modelFt {modelFt} is not supported. Current valid modelFt: analytical, numerical.')
+        try:
+            if modelFt == 'analytical':
+                FJ = self.SolveAnalytical(
+                    ttc, trc, t1, self.ind_geom, geom_coeff, v0t, v0r, v0, E0, betaE, t0, F0, vdrag
+                )
+            elif modelFt == 'numerical':
+                FJ = self.SolveNumerical(
+                    delta, time, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr
+                )
+            else:
+                print(f'The modelFt {modelFt} is not supported. Current valid modelFt: analytical, numerical.')
+        except:
+            FJ=[]
         # Determine non contact retrace region.
         idxNCr=np.arange((len(FJ)+len(FtNC)+1),len(delta)+1)
         # Assign the value of F0 to the non contact region.
