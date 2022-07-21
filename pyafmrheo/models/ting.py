@@ -182,8 +182,8 @@ class TingModel:
         NF = (max(F)-min(F))/10
         p0 = [self.E0_init/NF, self.tc_init, self.betaE_init, self.F0_init]
         bounds = [
-             [self.E0_min, np.min(time), self.betaE_min, self.F0_min],
-             [self.E0_max, np.max(time), self.betaE_max, self.F0_max]
+             [self.E0_init*0.001/NF, np.min(time), self.betaE_min, self.F0_min],
+             [self.E0_init*1e5/NF, np.max(time), self.betaE_max, self.F0_max]
         ]
         fixed_params = {
             't0': self.t0,
