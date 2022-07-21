@@ -99,8 +99,9 @@ class TingModel:
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
     def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None, NF=None):
-        # E0
-        E0 *= NF
+        if NF is not None:
+            # E0
+            E0 *= NF
         # Get indenter shape coefficient and exponent
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
