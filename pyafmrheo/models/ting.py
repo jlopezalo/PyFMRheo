@@ -155,19 +155,16 @@ class TingModel:
         # Assign the value of F0 to the non contact region.
         FtNC=F0*np.ones(idxNCt.size)
         # Compute Force according to the selected mode:
-        try:
-            if modelFt == 'analytical':
-                FJ = self.SolveAnalytical(
-                    ttc, trc, t1, self.ind_geom, geom_coeff, v0t, v0r, v0, E0, betaE, t0, F0, vdrag
-                )
-            elif modelFt == 'numerical':
-                FJ = self.SolveNumerical(
-                    delta, time, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr
-                )
-            else:
-                print(f'The modelFt {modelFt} is not supported. Current valid modelFt: analytical, numerical.')
-        except:
-            FJ=[]
+        if modelFt == 'analytical':
+            FJ = self.SolveAnalytical(
+                ttc, trc, t1, self.ind_geom, geom_coeff, v0t, v0r, v0, E0, betaE, t0, F0, vdrag
+            )
+        elif modelFt == 'numerical':
+            FJ = self.SolveNumerical(
+                delta, time, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr
+            )
+        else:
+            print(f'The modelFt {modelFt} is not supported. Current valid modelFt: analytical, numerical.')
         # Determine non contact retrace region.
         idxNCr=np.arange((len(FJ)+len(FtNC)+1),len(delta)+1)
         # Assign the value of F0 to the non contact region.
@@ -183,6 +180,10 @@ class TingModel:
         # Param order:
         # delta0, E0, tc, betaE, f0
         p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
+        bounds = [
+              [self.E0_init*0.001, np.min(time), self.betaE_min, self.F0_min],
+              [self.E0_init*1e5, np.max(time), self.betaE_max, self.F0_max]
+        ]
         fixed_params = {
             't0': self.t0,
             'F': F,
@@ -197,7 +198,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(p0)
-        res, _ = curve_fit(tingmodel, time, F, p0)
+        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
         self.E0 = res[0]
