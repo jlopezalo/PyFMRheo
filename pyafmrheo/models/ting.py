@@ -99,6 +99,7 @@ class TingModel:
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
     def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None, NF=None):
+        print(NF)
         if NF is not None:
             # E0
             E0 *= NF
