@@ -98,11 +98,7 @@ class TingModel:
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
-    def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None, NF=None):
-        print(NF)
-        if NF is not None:
-            # E0
-            E0 *= NF
+    def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
         # Get indenter shape coefficient and exponent
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
@@ -196,8 +192,7 @@ class TingModel:
             'modelFt': self.modelFt,
             'vdrag': self.vdrag,
             'smooth_w': self.smooth_w,
-            'idx_tm': self.idx_tm,
-            'NF': NF
+            'idx_tm': self.idx_tm
         }
         tingmodel =\
             lambda time, E0, tc, betaE, F0: self.objective(time, E0, tc, betaE, F0, **fixed_params)
