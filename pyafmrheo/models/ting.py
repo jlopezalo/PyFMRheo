@@ -179,10 +179,10 @@ class TingModel:
         self.smooth_w = smooth_w
         # Param order:
         # delta0, E0, tc, betaE, f0
-        p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
+        p0 = [np.log10(self.E0_init), self.tc_init, self.betaE_init, self.F0_init]
         bounds = [
-             [self.E0_init*0.001, np.min(time), self.betaE_min, self.F0_min],
-             [self.E0_init*1e5, np.max(time), self.betaE_max, self.F0_max]
+             [np.log10(self.E0_init*0.001), np.min(time), self.betaE_min, self.F0_min],
+             [np.log10(self.E0_init*1e5), np.max(time), self.betaE_max, self.F0_max]
         ]
         fixed_params = {
             't0': self.t0,
@@ -201,7 +201,7 @@ class TingModel:
         res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
-        self.E0 = res[0]
+        self.E0 = 10**res[0]
         self.tc = res[1]
         self.betaE = res[2]
         self.F0 = res[3]
