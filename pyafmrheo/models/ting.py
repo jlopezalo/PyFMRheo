@@ -112,7 +112,7 @@ class TingModel:
         if E0 < self.E0_init*0.001 or E0 > self.E0_init*1e5:
             return np.zeros(time.shape)
         # Bounds of beta
-        elif betaE <= 0  or betaE >= 1:
+        elif betaE <= 0  or betaE >= 0.5:
             return np.zeros(time.shape)
         # Model fails
         elif modelFt == 'analytical' and self.ind_geom == 'paraboloid' and betaE == 0.5:
