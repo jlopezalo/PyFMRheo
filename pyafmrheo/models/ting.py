@@ -101,11 +101,14 @@ class TingModel:
     def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
         E0 = 10 ** E0
         betaE = 10 ** betaE
+        # E0 range
         if E0 < self.E0_init*0.001 or E0 > self.E0_init*1e5:
             return
+        # Bounds of beta
         elif betaE <= 0  or betaE >= 1:
             return
-        elif self.ind_geom == 'paraboloid' and betaE == 0.5:
+        # Model fails
+        elif modelFt == 'analytical' and self.ind_geom == 'paraboloid' and betaE == 0.5:
             return
         return self.model(time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm, smooth_w)
     
@@ -204,7 +207,7 @@ class TingModel:
             lambda time, E0, tc, betaE, F0: self.objective(time, E0, tc, betaE, F0, **fixed_params)
         # Do fit
         self.n_params = len(p0)
-        res, _ = curve_fit(tingmodel, time, F, p0, method='lm')
+        res, _ = curve_fit(tingmodel, time, F, p0, method='lm', ftol=1.49012e-08, xtol=1.49012e-08)
 
         # Assign fit results to model params
         self.E0 = 10 ** res[0]
