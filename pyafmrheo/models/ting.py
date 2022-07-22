@@ -102,15 +102,6 @@ class TingModel:
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
-    def objective(
-        self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
-        idx_tm=None, smooth_w=None, v0t=None, v0r=None
-        ):
-        return self.model(
-            time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
-            idx_tm, smooth_w, v0t, v0r
-        )
-    
     def model(
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
         idx_tm=None, smooth_w=None, v0t=None, v0r=None
@@ -219,15 +210,15 @@ class TingModel:
             'v0r': self.v0r
         }
         tingmodel =\
-            lambda time, E0, tc, betaE, F0: self.objective(time, E0, tc, betaE, F0, **fixed_params)
+            lambda time, E0, tc, betaE, F0: self.model(time, E0, tc, betaE, F0, **fixed_params)
         # Do fit
         self.n_params = len(p0)
         res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds, ftol=1.49012e-08, xtol=1.49012e-08)
 
         # Assign fit results to model params
-        self.E0 = 10 ** res[0]
+        self.E0 = res[0]
         self.tc = res[1]
-        self.betaE = 10 ** res[2]
+        self.betaE = res[2]
         self.F0 = res[3]
         
         modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
