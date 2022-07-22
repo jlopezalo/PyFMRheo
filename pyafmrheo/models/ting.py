@@ -105,7 +105,7 @@ class TingModel:
             return
         elif self.ind_geom == 'paraboloid' and betaE == 0.5:
             return
-        return self.model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=idx_tm, smooth_w=smooth_w)
+        return self.model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm, smooth_w)
     
     def model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
         # Get indenter shape coefficient and exponent
