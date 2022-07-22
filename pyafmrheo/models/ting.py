@@ -153,6 +153,7 @@ class TingModel:
             # Fit 1 degree polynomial (x0 + m) to trace and retrace for determining
             # the corresponding speeds (x0)
             v0t = np.polyfit(time[range_v0t], delta[range_v0t], 1)[0]
+            self.v0t = v0t
         if v0r is None:
             # Define range to compute retrace speed.
             # Excluding t max.
@@ -160,6 +161,7 @@ class TingModel:
             # Fit 1 degree polynomial (x0 + m) to trace and retrace for determining
             # the corresponding speeds (x0) 
             v0r = -1 * np.polyfit(time[range_v0r], delta[range_v0r], 1)[0]
+            self.v0t = v0r
         # Compute mean speed.
         v0=(v0r+v0t)/2
         # Compute retrace contact time.
