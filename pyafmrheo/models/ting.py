@@ -99,6 +99,13 @@ class TingModel:
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
     def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
+        E0 = 10 ** E0
+        tc = 10 ** tc
+        betaE = 10 ** betaE
+        F0 = 10 ** F0
+        return self.model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=idx_tm, smooth_w=smooth_w)
+    
+    def model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
         # Get indenter shape coefficient and exponent
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
@@ -179,7 +186,11 @@ class TingModel:
         self.smooth_w = smooth_w
         # Param order:
         # delta0, E0, tc, betaE, f0
-        p0 = [self.E0_init, self.tc_init, self.betaE_init, self.F0_init]
+        p0 = [np.log10(self.E0_init), np.log10(self.tc_init), np.log10(self.betaE_init), np.log10(self.F0_init)]
+        bounds = [
+            [np.log10(self.E0_init*0.001), np.log10(np.min(time)), np.log10(self.betaE_min), np.log10(self.F0_min)],
+            [np.log10(self.E0_init*1e5), np.log10(np.max(time)), np.log10(self.betaE_max), np.log10(self.F0_max)]
+        ]
         fixed_params = {
             't0': self.t0,
             'F': F,
@@ -194,13 +205,13 @@ class TingModel:
         
         # Do fit
         self.n_params = len(p0)
-        res, _ = curve_fit(tingmodel, time, F, p0)
+        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
 
         # Assign fit results to model params
-        self.E0 = res[0]
-        self.tc = res[1]
-        self.betaE = res[2]
-        self.F0 = res[3]
+        self.E0 = 10 ** res[0]
+        self.tc = 10 ** res[1]
+        self.betaE = 10 ** res[2]
+        self.F0 = 10 ** res[3]
         
         modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w)
 
@@ -217,7 +228,7 @@ class TingModel:
         self.redchi = self.get_red_chisq(time, F, delta, t0, idx_tm, smooth_w)
 
     def eval(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
-        return self.objective(
+        return self.model(
             time, self.E0, self.tc, self.betaE, self.F0, t0, F, delta,
             self.modelFt, self.vdrag, idx_tm, smooth_w)
 
