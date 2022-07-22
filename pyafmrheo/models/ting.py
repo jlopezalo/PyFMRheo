@@ -99,6 +99,8 @@ class TingModel:
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
     def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
+        E0 = 10 ** E0
+        betaE = 10 ** betaE
         if E0 < self.E0_init*0.001 or E0 > self.E0_init*1e5:
             return
         elif betaE <= 0  or betaE >= 1:
@@ -188,7 +190,7 @@ class TingModel:
         self.smooth_w = smooth_w
         # Param order:
         # delta0, E0, tc, betaE, f0
-        p0 = [self.E0_init, self.tc_init, self.betaE_init,self.F0_init]
+        p0 = [np.log10(self.E0_init), self.tc_init, np.log10(self.betaE_init),self.F0_init]
         fixed_params = {
             't0': self.t0,
             'F': F,
@@ -205,9 +207,9 @@ class TingModel:
         res, _ = curve_fit(tingmodel, time, F, p0, method='lm')
 
         # Assign fit results to model params
-        self.E0 = res[0]
+        self.E0 = 10 ** res[0]
         self.tc = res[1]
-        self.betaE = res[2]
+        self.betaE = 10 ** res[2]
         self.F0 = res[3]
         
         modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w)
