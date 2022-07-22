@@ -100,9 +100,7 @@ class TingModel:
     
     def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
         E0 = 10 ** E0
-        tc = 10 ** tc
         betaE = 10 ** betaE
-        F0 = 10 ** F0
         return self.model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=idx_tm, smooth_w=smooth_w)
     
     def model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
@@ -186,7 +184,7 @@ class TingModel:
         self.smooth_w = smooth_w
         # Param order:
         # delta0, E0, tc, betaE, f0
-        p0 = [np.log10(self.E0_init), np.log10(self.tc_init), np.log10(self.betaE_init), np.log10(self.F0_init)]
+        p0 = [np.log10(self.E0_init), self.tc_init, np.log10(self.betaE_init),self.F0_init]
         bounds = [
             [self.E0_init*0.001, np.min(time), self.betaE_min, self.F0_min],
             [self.E0_init*1e5, np.max(time), self.betaE_max, self.F0_max]
@@ -205,13 +203,13 @@ class TingModel:
         
         # Do fit
         self.n_params = len(p0)
-        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds)
+        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds, method='lm')
 
         # Assign fit results to model params
         self.E0 = 10 ** res[0]
-        self.tc = 10 ** res[1]
+        self.tc = res[1]
         self.betaE = 10 ** res[2]
-        self.F0 = 10 ** res[3]
+        self.F0 = res[3]
         
         modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w)
 
