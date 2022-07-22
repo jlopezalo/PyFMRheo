@@ -41,6 +41,10 @@ class TingModel:
         self.poisson_ratio = 0.5
         # Viscous drag factor
         self.vdrag = 0
+        # v0t
+        self.v0t = None
+        # v0r
+        self.v0r = None
         # Smooth window
         self.smooth_w = None
         # Moximum indentation time
@@ -98,7 +102,10 @@ class TingModel:
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
-    def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
+    def objective(
+        self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
+        idx_tm=None, smooth_w=None, v0t=None, v0r=None
+        ):
         E0 = 10 ** E0
         betaE = 10 ** betaE
         # E0 range
@@ -110,9 +117,15 @@ class TingModel:
         # Model fails
         elif modelFt == 'analytical' and self.ind_geom == 'paraboloid' and betaE == 0.5:
             return
-        return self.model(time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm, smooth_w)
+        return self.model(
+            time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
+            idx_tm, smooth_w, v0t, v0r
+        )
     
-    def model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
+    def model(
+        self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
+        idx_tm=None, smooth_w=None, v0t=None, v0r=None
+        ):
         # Get indenter shape coefficient and exponent
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
@@ -133,16 +146,20 @@ class TingModel:
         idxCt = np.arange(idxCt[0], idx_tm + 1)
         # Determine contact time trace.
         ttc=time[idxCt]
-        # Define range to compute trace speed.
-        # Including t max.
-        range_v0t=np.arange((idx_tm-int(len(ttc)*3/4)), idx_tm)
-        # Define range to compute retrace speed.
-        # Excluding t max.
-        range_v0r=np.arange(idx_tm+2, (idx_tm+1+int(len(ttc)*3/4)))
-        # Fit 1 degree polynomial (x0 + m) to trace and retrace for determining
-        # the corresponding speeds (x0)
-        v0t = np.polyfit(time[range_v0t], delta[range_v0t], 1)[0]
-        v0r = -1 * np.polyfit(time[range_v0r], delta[range_v0r], 1)[0]
+        if v0t is None:
+            # Define range to compute trace speed.
+            # Including t max.
+            range_v0t=np.arange((idx_tm-int(len(ttc)*3/4)), idx_tm)
+            # Fit 1 degree polynomial (x0 + m) to trace and retrace for determining
+            # the corresponding speeds (x0)
+            v0t = np.polyfit(time[range_v0t], delta[range_v0t], 1)[0]
+        if v0r is None:
+            # Define range to compute retrace speed.
+            # Excluding t max.
+            range_v0r=np.arange(idx_tm+2, (idx_tm+1+int(len(ttc)*3/4)))
+            # Fit 1 degree polynomial (x0 + m) to trace and retrace for determining
+            # the corresponding speeds (x0) 
+            v0r = -1 * np.polyfit(time[range_v0r], delta[range_v0r], 1)[0]
         # Compute mean speed.
         v0=(v0r+v0t)/2
         # Compute retrace contact time.
@@ -186,11 +203,13 @@ class TingModel:
         # Concatenate non contact regions to the contact region. And return.
         return np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
     
-    def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
+    def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         # Assing idx_tm and smooth_w
         self.t0 = t0
         self.idx_tm = idx_tm
         self.smooth_w = smooth_w
+        self.v0t = v0t
+        self.v0r = v0r
         # Param order:
         # delta0, E0, tc, betaE, f0
         p0 = [np.log10(self.E0_init), self.tc_init, np.log10(self.betaE_init),self.F0_init]
@@ -201,7 +220,9 @@ class TingModel:
             'modelFt': self.modelFt,
             'vdrag': self.vdrag,
             'smooth_w': self.smooth_w,
-            'idx_tm': self.idx_tm
+            'idx_tm': self.idx_tm,
+            'v0t': self.v0t, 
+            'v0r': self.v0r
         }
         tingmodel =\
             lambda time, E0, tc, betaE, F0: self.objective(time, E0, tc, betaE, F0, **fixed_params)
@@ -215,7 +236,7 @@ class TingModel:
         self.betaE = 10 ** res[2]
         self.F0 = res[3]
         
-        modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w)
+        modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
 
         absError = modelPredictions - F
 
@@ -226,23 +247,23 @@ class TingModel:
         self.Rsquared = 1.0 - (np.var(absError) / np.var(F))
         
         # Get goodness of fit params
-        self.chisq = self.get_chisq(time, F, delta, t0, idx_tm, smooth_w)
-        self.redchi = self.get_red_chisq(time, F, delta, t0, idx_tm, smooth_w)
+        self.chisq = self.get_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
+        self.redchi = self.get_red_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
 
-    def eval(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
+    def eval(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         return self.model(
             time, self.E0, self.tc, self.betaE, self.F0, t0, F, delta,
-            self.modelFt, self.vdrag, idx_tm, smooth_w)
+            self.modelFt, self.vdrag, idx_tm, smooth_w, v0t, v0r)
 
-    def get_residuals(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
-        return F - self.eval(time, F, delta, t0,idx_tm, smooth_w)
+    def get_residuals(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
+        return F - self.eval(time, F, delta, t0,idx_tm, smooth_w, v0t, v0r)
 
-    def get_chisq(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
-        a = (self.get_residuals(time, F, delta, t0, idx_tm, smooth_w)**2/F)
+    def get_chisq(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
+        a = (self.get_residuals(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)**2/F)
         return np.sum(a[np.isfinite(a)])
     
-    def get_red_chisq(self, time, F, delta, t0, idx_tm=None, smooth_w=None):
-        return self.get_chisq(time, F, delta, t0, idx_tm, smooth_w) / self.n_params
+    def get_red_chisq(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
+        return self.get_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r) / self.n_params
     
     def fit_report(self):
         print(f"""
