@@ -99,8 +99,12 @@ class TingModel:
         return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
     
     def objective(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
-        E0 = 10 ** E0
-        betaE = 10 ** betaE
+        if E0 < self.E0_init*0.001 or E0 > self.E0_init*1e5:
+            return
+        elif betaE <= 0  or betaE >= 1:
+            return
+        elif self.ind_geom == 'paraboloid' and betaE == 0.5:
+            return
         return self.model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=idx_tm, smooth_w=smooth_w)
     
     def model(self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag, idx_tm=None, smooth_w=None):
@@ -185,10 +189,6 @@ class TingModel:
         # Param order:
         # delta0, E0, tc, betaE, f0
         p0 = [np.log10(self.E0_init), self.tc_init, np.log10(self.betaE_init),self.F0_init]
-        bounds = [
-            [self.E0_init*0.001, np.min(time), self.betaE_min, self.F0_min],
-            [self.E0_init*1e5, np.max(time), self.betaE_max, self.F0_max]
-        ]
         fixed_params = {
             't0': self.t0,
             'F': F,
@@ -203,7 +203,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(p0)
-        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds, method='lm')
+        res, _ = curve_fit(tingmodel, time, F, p0, method='lm')
 
         # Assign fit results to model params
         self.E0 = 10 ** res[0]
