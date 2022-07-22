@@ -188,8 +188,8 @@ class TingModel:
         # delta0, E0, tc, betaE, f0
         p0 = [np.log10(self.E0_init), np.log10(self.tc_init), np.log10(self.betaE_init), np.log10(self.F0_init)]
         bounds = [
-            [np.log10(self.E0_init*0.001), np.log10(np.min(time)), np.log10(self.betaE_min), np.log10(self.F0_min)],
-            [np.log10(self.E0_init*1e5), np.log10(np.max(time)), np.log10(self.betaE_max), np.log10(self.F0_max)]
+            [self.E0_init*0.001, np.min(time), self.betaE_min, self.F0_min],
+            [self.E0_init*1e5, np.max(time), self.betaE_max, self.F0_max]
         ]
         fixed_params = {
             't0': self.t0,
