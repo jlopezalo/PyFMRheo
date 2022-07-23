@@ -200,8 +200,8 @@ class TingModel:
         # Param order:
         p0 = [self.E0_init, self.tc_init, self.betaE_init,self.F0_init]
         bounds = [
-            [self.E0_init*0.001, 0, 0.01, -np.inf],
-            [self.E0_init*1e5, tm, 0.49, np.inf]
+            [self.E0_init/10000, 0, 0.01, -np.inf],
+            [np.inf, tm, 0.49, np.inf]
         ]
         fixed_params = {
             't0': self.t0,
@@ -220,7 +220,7 @@ class TingModel:
         self.n_params = len(p0)
         res, _ = curve_fit(
             tingmodel, time, F, p0, bounds=bounds, method='trf',
-            ftol=1.8e-08, xtol=1.8e-08, loss='cauchy', tr_solver='exact'
+            ftol=1.8e-08, xtol=1.8e-08, loss='linear', tr_solver=None
         )
 
         # Assign fit results to model params
