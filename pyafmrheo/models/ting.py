@@ -218,7 +218,11 @@ class TingModel:
             lambda time, E0, tc, betaE, F0: self.model(time, E0, tc, betaE, F0, **fixed_params)
         # Do fit
         self.n_params = len(p0)
-        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds, ftol=1.49012e-08, xtol=1.49012e-08)
+        res, _ = curve_fit(
+            tingmodel, time, F, p0, bounds=bounds,
+            ftol=1.49012e-08, xtol=1.49012e-08,
+            loss='soft_l1'
+        )
 
         # Assign fit results to model params
         self.E0 = res[0]
