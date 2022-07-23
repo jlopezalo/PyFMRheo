@@ -220,7 +220,7 @@ class TingModel:
         self.n_params = len(p0)
         res, _ = curve_fit(
             tingmodel, time, F, p0, bounds=bounds, method='trf',
-            ftol=1.8e-08, xtol=1.8e-08, loss='soft_l1', tr_solver='exact'
+            ftol=1.8e-08, xtol=1.8e-08, loss='cauchy', tr_solver='exact'
         )
 
         # Assign fit results to model params
