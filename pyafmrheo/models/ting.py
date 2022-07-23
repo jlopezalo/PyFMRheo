@@ -201,7 +201,7 @@ class TingModel:
         p0 = [self.E0_init, self.tc_init, self.betaE_init,self.F0_init]
         bounds = [
             [self.E0_init*0.001, 0, 0.01, -np.inf],
-            [self.E0_init*1e5, tm, 0.5, np.inf]
+            [self.E0_init*1e5, tm, 0.49, np.inf]
         ]
         fixed_params = {
             't0': self.t0,
