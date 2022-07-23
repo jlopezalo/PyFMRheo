@@ -221,7 +221,7 @@ class TingModel:
         res, _ = curve_fit(
             tingmodel, time, F, p0, bounds=bounds,
             ftol=1.49012e-08, xtol=1.49012e-08,
-            loss='linear', tr_solver='lsmr'
+            loss='dogbox', tr_solver='lsmr'
         )
 
         # Assign fit results to model params
