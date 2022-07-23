@@ -194,11 +194,14 @@ class TingModel:
         self.smooth_w = smooth_w
         self.v0t = v0t
         self.v0r = v0r
+        if idx_tm is None:
+            idx_tm = np.argmax(F)
+        tm = time[idx_tm]
         # Param order:
         p0 = [self.E0_init, self.tc_init, self.betaE_init,self.F0_init]
         bounds = [
-            [self.E0_init*0.001, -np.inf, 0, -np.inf],
-            [self.E0_init*1e5, np.inf, 0.5, np.inf]
+            [self.E0_init*0.001, 0, 0, -100e-12],
+            [self.E0_init*1e5, tm, 1, 100e12]
         ]
         fixed_params = {
             't0': self.t0,
@@ -215,7 +218,7 @@ class TingModel:
             lambda time, E0, tc, betaE, F0: self.model(time, E0, tc, betaE, F0, **fixed_params)
         # Do fit
         self.n_params = len(p0)
-        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds, ftol=1.49012e-08, xtol=1.49012e-08)
+        res, _ = curve_fit(tingmodel, time, F, p0, bounds=bounds, ftol=1.49012e-09, xtol=1.49012e-09)
 
         # Assign fit results to model params
         self.E0 = res[0]
