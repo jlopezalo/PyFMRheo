@@ -219,9 +219,8 @@ class TingModel:
         # Do fit
         self.n_params = len(p0)
         res, _ = curve_fit(
-            tingmodel, time, F, p0, bounds=bounds,
-            ftol=1.49012e-08, xtol=1.49012e-08,
-            loss='dogbox', tr_solver='lsmr'
+            tingmodel, time, F, p0, bounds=bounds, method='dogbox',
+            ftol=1.8e-08, xtol=1.8e-08, loss='linear', tr_solver='exact'
         )
 
         # Assign fit results to model params
