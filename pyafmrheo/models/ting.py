@@ -109,7 +109,6 @@ class TingModel:
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
         idx_tm=None, smooth_w=None, v0t=None, v0r=None
         ):
-        E0 = 10**E0
         # Get indenter shape coefficient and exponent
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
