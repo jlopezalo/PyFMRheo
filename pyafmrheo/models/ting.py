@@ -54,7 +54,7 @@ class TingModel:
     def SolveAnalytical(self, ttc, trc, t1, model_probe, geom_coeff, v0t, v0r, v0, E0, betaE, t0, F0, vdrag):
         # TO DO: ADD REFERENCE!!!
         if model_probe == 'paraboloid':
-            Cp=1/geom_coeff
+            Cp=geom_coeff
             Ftp=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*np.array(gamma(1-betaE), dtype=float)/(Cp*2*np.array(gamma(5/2-betaE), dtype=float))*ttc**(3/2-betaE)
             if np.abs(v0r-v0t)/v0t<0.01:
                 A = [hyp2f1(1, 1/2-betaE, 1/2, t1[i]/trc[i]) for i in range(len(trc))]
@@ -66,7 +66,7 @@ class TingModel:
                     (-trc+(2*betaE-1)*t1+trc*np.array(A, dtype=float))
             return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag]+F0
         elif model_probe in ('cone', 'pyramid'):
-            Cc=1/geom_coeff
+            Cc=geom_coeff
             if np.abs(v0r-v0t)/v0t<0.01:
                 Ftc=2*v0**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
                 Frc=-2*v0**2.*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
