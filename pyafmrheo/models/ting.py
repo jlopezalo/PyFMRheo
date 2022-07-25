@@ -196,8 +196,8 @@ class TingModel:
         self.smooth_w = smooth_w
         self.v0t = v0t
         self.v0r = v0r
-        self.E0_min = self.E0_init/1e4
-        self.E0_max = np.inf
+        self.E0_min = self.E0_init/1e10
+        self.E0_max = self.E0_init * 1e5
         downfactor = len(time) // 300
         self.tc_min = self.tc_init-downfactor/(1/(time[1]-time[0]))*10
         self.tc_max = self.tc_init+downfactor/(1/(time[1]-time[0]))*10
