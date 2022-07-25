@@ -109,6 +109,7 @@ class TingModel:
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
         idx_tm=None, smooth_w=None, v0t=None, v0r=None
         ):
+        E0=10**E0
         # Get indenter shape coefficient and exponent
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
@@ -204,9 +205,9 @@ class TingModel:
         self.F0_min = self.F0_init-100e-12
         self.F0_max = self.F0_init+100e-12
         # Param order:
-        p0 = [self.E0_init, self.tc_init, self.betaE_init,self.F0_init]
-        LB = [self.E0_min, self.tc_min, self.betaE_min, self.F0_min]
-        UB = [self.E0_max, self.tc_max, self.betaE_max, self.F0_max]
+        p0 = [np.log10(self.E0_init), self.tc_init, self.betaE_init,self.F0_init]
+        LB = [np.log10(self.E0_min), self.tc_min, self.betaE_min, self.F0_min]
+        UB = [np.log10(self.E0_max), self.tc_max, self.betaE_max, self.F0_max]
         
         fixed_params = {
             't0': self.t0,
@@ -231,7 +232,7 @@ class TingModel:
         )
 
         # Assign fit results to model params
-        self.E0 = res[0]
+        self.E0 = 10**res[0]
         self.tc = res[1]
         self.betaE = res[2]
         self.F0 = res[3]
