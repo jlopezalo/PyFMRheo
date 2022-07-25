@@ -206,8 +206,8 @@ class TingModel:
         self.F0_max = self.F0_init+100e-12
         # Param order:
         p0 = [np.log10(self.E0_init), self.tc_init, self.betaE_init,self.F0_init]
-        LB = [np.log10(self.E0_min), self.tc_min, self.betaE_min, self.F0_min]
-        UB = [np.log10(self.E0_max), self.tc_max, self.betaE_max, self.F0_max]
+        LB = [self.E0_min, self.tc_min, self.betaE_min, self.F0_min]
+        UB = [self.E0_max, self.tc_max, self.betaE_max, self.F0_max]
         
         fixed_params = {
             't0': self.t0,
