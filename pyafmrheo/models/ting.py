@@ -181,8 +181,6 @@ class TingModel:
             )
         else:
             print(f'The modelFt {modelFt} is not supported. Current valid modelFt: analytical, numerical.')
-        print(FJ)
-        print(geom_coeff)
         # Determine non contact retrace region.
         idxNCr=np.arange((len(FJ)+len(FtNC)+1),len(delta)+1)
         # Assign the value of F0 to the non contact region.
