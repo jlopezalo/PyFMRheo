@@ -147,7 +147,6 @@ class TingModel:
             self.v0t = v0r
         # Compute mean speed.
         v0=(v0r+v0t)/2
-        print(v0)
         # Compute retrace contact time.
         # TO DO: ADD REFERENCE TO ARTICLE!!!!
         tcr=(1+v0r/v0t)**(1/(1-betaE))/((1+v0r/v0t)**(1/(1-betaE))-1)*tm
