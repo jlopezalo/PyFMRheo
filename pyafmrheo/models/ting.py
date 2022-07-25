@@ -1,4 +1,3 @@
-from pickle import NONE
 import numpy as np
 from scipy.special import hyp2f1, gamma
 from scipy.optimize import curve_fit
@@ -199,10 +198,8 @@ class TingModel:
         tm = time[idx_tm]
         # Param order:
         p0 = [self.E0_init, self.tc_init, self.betaE_init,self.F0_init]
-        bounds = [
-            [self.E0_init/10000, 0, 0.01, -np.inf],
-            [np.inf, tm, 0.49, np.inf]
-        ]
+        LB = [self.E0_init/10000, 0, 0.01, self.F0_init-100e-12]
+        UB = [np.inf, tm, 1, self.F0_init+100e-12]
         fixed_params = {
             't0': self.t0,
             'F': F,
@@ -219,7 +216,7 @@ class TingModel:
         # Do fit
         self.n_params = len(p0)
         res, _ = curve_fit(
-            tingmodel, time, F, p0, bounds=bounds, method='trf',
+            tingmodel, time, F, p0, bounds=[LB, UB], method='trf',
             ftol=1.8e-08, xtol=1.8e-08, loss='linear', tr_solver=None
         )
 
