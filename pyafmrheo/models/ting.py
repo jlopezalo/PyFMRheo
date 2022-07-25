@@ -26,10 +26,12 @@ class TingModel:
         # Time of contact
         self.tc = 0
         self.tc_init = 0
+        self.tc_max = 0
+        self.tc_min = 0
         # Fluidity exponent
         self.betaE = 0.2
         self.betaE_init = 0.2
-        self.betaE_min = 0
+        self.betaE_min = 0.01
         self.betaE_max = 1
         # Contact force
         self.F0 = 0
@@ -187,19 +189,25 @@ class TingModel:
         return np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
     
     def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
+        
         # Assing idx_tm and smooth_w
         self.t0 = t0
         self.idx_tm = idx_tm
         self.smooth_w = smooth_w
         self.v0t = v0t
         self.v0r = v0r
-        if idx_tm is None:
-            idx_tm = np.argmax(F)
-        tm = time[idx_tm]
+        self.E0_min = self.E0_init/1e4
+        self.E0_max = np.inf
+        downfactor = len(time) // 300
+        self.tc_min = self.tc_init-downfactor/(1/(time[1]-time[0]))*10
+        self.tc_max = self.tc_init+downfactor/(1/(time[1]-time[0]))*10
+        self.F0_min = self.F0_init-100e-12
+        self.F0_max = self.F0_init+100e-12
         # Param order:
         p0 = [self.E0_init, self.tc_init, self.betaE_init,self.F0_init]
-        LB = [self.E0_init/10000, 0, 0.01, self.F0_init-100e-12]
-        UB = [np.inf, tm, 1, self.F0_init+100e-12]
+        LB = [self.E0_min, self.tc_min, self.betaE_min, self.F0_min]
+        UB = [self.E0_max, self.tc_max, self.betaE_max, self.F0_max]
+        
         fixed_params = {
             't0': self.t0,
             'F': F,
@@ -211,8 +219,10 @@ class TingModel:
             'v0t': self.v0t, 
             'v0r': self.v0r
         }
+
         tingmodel =\
             lambda time, E0, tc, betaE, F0: self.model(time, E0, tc, betaE, F0, **fixed_params)
+        
         # Do fit
         self.n_params = len(p0)
         res, _ = curve_fit(
@@ -225,7 +235,7 @@ class TingModel:
         self.tc = res[1]
         self.betaE = res[2]
         self.F0 = res[3]
-        
+
         modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
 
         absError = modelPredictions - F
@@ -235,7 +245,7 @@ class TingModel:
         self.MSE = np.mean(self.SE) # mean squared errors
         self.RMSE = np.sqrt(self.MSE) # Root Mean Squared Error, RMSE
         self.Rsquared = 1.0 - (np.var(absError) / np.var(F))
-        
+
         # Get goodness of fit params
         self.chisq = self.get_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
         self.redchi = self.get_red_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
