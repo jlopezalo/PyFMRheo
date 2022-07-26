@@ -64,7 +64,8 @@ class TingModel:
                 A = [hyp2f1_apprx(1, 1/2-betaE, 1/2, t1[i]/trc[i]) for i in range(len(trc))]
                 Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
                     (-trc+(2*betaE-1)*t1+trc*np.array(A, dtype=float))
-            return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag] + F0
+            # return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag] + F0
+            return np.r_[Ftp, Frp]
         elif model_probe in ('cone', 'pyramid'):
             Cc=1/geom_coeff
             if np.abs(v0r-v0t)/v0t<0.01:
@@ -75,7 +76,8 @@ class TingModel:
                 Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
                 Frc=-2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
                     trc**(1-betaE)*(trc))
-            return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag] + F0
+            # return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag] + F0
+            return np.r_[Ftc, Frc]
     
     def SolveNumerical(self, delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr):
         delta0 = delta - delta[idxCt[0]]
@@ -186,8 +188,8 @@ class TingModel:
         # Assign the value of F0 to the non contact region.
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
-        output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
-        # output = np.r_[FtNC+F0, FJ+F0, FrNC+F0]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
+        # output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
+        output = np.r_[FtNC, FJ+F0, FrNC]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
         return output
     
     def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
