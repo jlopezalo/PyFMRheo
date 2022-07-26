@@ -186,7 +186,7 @@ class TingModel:
         # Assign the value of F0 to the non contact region.
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
-        output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]+F0
+        output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
         # output = np.r_[FtNC+F0, FJ+F0, FrNC+F0]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
         return output
     
