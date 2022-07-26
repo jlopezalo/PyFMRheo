@@ -75,7 +75,7 @@ class TingModel:
                 Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
                 Frc=-2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
                     trc**(1-betaE)*(trc))
-            return np.r_[Ftc, Frc]
+            return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]
     
     def SolveNumerical(self, delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr):
         delta0 = delta - delta[idxCt[0]]
@@ -186,8 +186,7 @@ class TingModel:
         # Assign the value of F0 to the non contact region.
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
-        output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
-        # output = np.r_[FtNC+F0, FJ+F0, FrNC+F0]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
+        output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]+F0
         # output = np.r_[FtNC+F0, FJ+F0, FrNC+F0]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
         return output
     
