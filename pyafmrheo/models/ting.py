@@ -57,11 +57,11 @@ class TingModel:
             Cp=1/geom_coeff
             Ftp=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*np.array(gamma(1-betaE), dtype=float)/(Cp*2*np.array(gamma(5/2-betaE), dtype=float))*ttc**(3/2-betaE)
             if np.abs(v0r-v0t)/v0t<0.01:
-                A = [hyp2f1_apprx(1, 1/2-betaE, 1/2, t1[i]/trc[i]) for i in range(len(trc))]
+                A = [hyp2f1(1, 1/2-betaE, 1/2, t1[i]/trc[i]) for i in range(len(trc))]
                 Frp=3/Cp*E0*v0**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
                     (-trc+(2*betaE-1)*t1+trc*np.array(A, dtype=float))
             else:
-                A = [hyp2f1_apprx(1, 1/2-betaE, 1/2, t1[i]/trc[i]) for i in range(len(trc))]
+                A = [hyp2f1(1, 1/2-betaE, 1/2, t1[i]/trc[i]) for i in range(len(trc))]
                 Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
                     (-trc+(2*betaE-1)*t1+trc*np.array(A, dtype=float))
             return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag]+F0
