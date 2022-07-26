@@ -105,7 +105,7 @@ class TingModel:
             t10 = time_[idxCr0]
             idx = np.arange(idxCt[0]+1, idxCt[0]+idx_min_phi0+1)
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
-        return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
+        return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]
     
     def model(
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
