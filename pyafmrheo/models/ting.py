@@ -103,7 +103,7 @@ class TingModel:
             t10 = time_[idxCr0]
             idx = np.arange(idxCt[0]+1, idxCt[0]+idx_min_phi0+1)
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
-        return np.r_[Ftc, Frc]+F0
+        return np.r_[Ftc, Frc]
     
     def model(
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
@@ -186,7 +186,8 @@ class TingModel:
         # Assign the value of F0 to the non contact region.
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
-        return np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
+        # return np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
+        return np.r_[FtNC, FJ+F0, FrNC]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
     
     def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         
