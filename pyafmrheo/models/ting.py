@@ -64,7 +64,7 @@ class TingModel:
                 A = [hyp2f1_apprx(1, 1/2-betaE, 1/2, t1[i]/trc[i]) for i in range(len(trc))]
                 Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
                     (-trc+(2*betaE-1)*t1+trc*np.array(A, dtype=float))
-            return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag]+F0
+            return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag]
         elif model_probe in ('cone', 'pyramid'):
             Cc=1/geom_coeff
             if np.abs(v0r-v0t)/v0t<0.01:
