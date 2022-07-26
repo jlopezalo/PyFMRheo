@@ -2,7 +2,7 @@ import numpy as np
 from scipy.special import hyp2f1, gamma
 from scipy.optimize import curve_fit
 from .geom_coeffs import get_coeff
-from ..utils.signal_processing import numdiff, smoothM
+from ..utils.signal_processing import numdiff, smoothM, hyp2f1_apprx
 
 class TingModel:
     def __init__(self, ind_geom, tip_param, modelFt) -> None:
@@ -187,7 +187,7 @@ class TingModel:
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
         # return np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
-        return np.r_[FtNC, FJ+F0, FrNC]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
+        return np.r_[FtNC+F0, FJ+F0, FrNC+F0]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
     
     def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         

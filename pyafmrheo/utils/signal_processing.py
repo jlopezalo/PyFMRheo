@@ -1,6 +1,22 @@
 import numpy as np
 import pandas as pd
 from scipy.signal import detrend
+from scipy.special import beta
+
+def hyp2f1_apprx(a, b, c, x):
+    # approximation to hypergeometric function 2F1([a, b], c, x)
+    # for 0<a<c, x>=0 and b>=0(Butler and Wood, 2000, Annals of Statistics)
+    tau=x*(b-a)-c
+    yhat=2*a/(np.sqrt(tau**2-4*a*x*(c-b))-tau)
+
+    if b>=0 and (x>=0).any():
+        r21=yhat**2/a+(1-yhat)**2/(c-a)-b*x**2./(1-x*yhat)**2*yhat**2/a*(1-yhat)**2/(c-a)
+        return c ** (c - 1 / 2) * r21 ** (-1 / 2) * (yhat / a) ** a * ((1 - yhat) / (c - a)) ** (c - a) * (1 - x * yhat) ** (-b)
+
+    else:
+        # for b<0 and x<0
+        j21=a*(1-yhat)**2+(c-a)*yhat**2-b*x**2.*yhat**2.*(1-yhat)**2./(1-x*yhat)**2
+        return np.sqrt(2 * np.pi) * beta(a, c - a) ** (-1) * j21 ** (-1 / 2) * yhat**a * (1 - yhat) ** (c - a) * (1 - x * yhat) ** (-b)
 
 def numdiff(y):
     diffy = np.zeros(len(y))
