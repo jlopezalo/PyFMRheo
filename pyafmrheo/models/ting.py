@@ -64,7 +64,7 @@ class TingModel:
                 A = [hyp2f1_apprx(1, 1/2-betaE, 1/2, t1[i]/trc[i]) for i in range(len(trc))]
                 Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
                     (-trc+(2*betaE-1)*t1+trc*np.array(A, dtype=float))
-            return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag]
+            return np.r_[Ftp, Frp]
         elif model_probe in ('cone', 'pyramid'):
             Cc=1/geom_coeff
             if np.abs(v0r-v0t)/v0t<0.01:
@@ -75,7 +75,7 @@ class TingModel:
                 Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
                 Frc=-2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
                     trc**(1-betaE)*(trc))
-            return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]
+            return np.r_[Ftc, Frc]
     
     def SolveNumerical(self, delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr):
         delta0 = delta - delta[idxCt[0]]
@@ -103,7 +103,7 @@ class TingModel:
             t10 = time_[idxCr0]
             idx = np.arange(idxCt[0]+1, idxCt[0]+idx_min_phi0+1)
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
-        return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
+        return np.r_[Ftc, Frc]
     
     def model(
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
