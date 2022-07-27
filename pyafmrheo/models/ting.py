@@ -124,6 +124,7 @@ class TingModel:
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
         time=time-tc
+        print(time)
         # Compute deltat.
         deltat=time[1]-time[0]
         print(f'idx_tm --> {idx_tm}')
