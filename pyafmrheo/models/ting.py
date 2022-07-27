@@ -126,11 +126,13 @@ class TingModel:
         time=time-tc
         # Compute deltat.
         deltat=time[1]-time[0]
+        print(f'idx_tm --> {idx_tm}')
         # If no t max index is given search the index of F max.
         if idx_tm is None:
             idx_tm = np.argmax(F)
         # Get t max value.
         tm = time[idx_tm]
+        print(f'tm --> {tm}')
         # Determine non contact trace region.
         idxNCt=np.where(time<0)[0]
         # Determine contact trace region
@@ -158,13 +160,9 @@ class TingModel:
             self.v0t = v0r
         # Compute mean speed.
         v0=(v0r+v0t)/2
-        print(v0)
         # Compute retrace contact time.
         # TO DO: ADD REFERENCE TO ARTICLE!!!!
         tcr=(1+v0r/v0t)**(1/(1-betaE))/((1+v0r/v0t)**(1/(1-betaE))-1)*tm
-        print(tm)
-        tcr=np.abs((1+v0r/v0t)**(1/(1-betaE))/((1+v0r/v0t)**(1/(1-betaE))-1))*tm
-        print(tcr)
         # If the retrace contact time is smaller than t max,
         # define the end of the contact retrace region as 3 times t max.
         if not tcr<tm:
