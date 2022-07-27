@@ -123,6 +123,7 @@ class TingModel:
         tm = time[idx_tm]
         # Determine non contact trace region.
         idxNCt=np.where(time<0)[0]
+        print(idxNCt)
         # Determine contact trace region
         idxCt=np.where(time>=0)[0]
         # Get indices corresponding to contact trace region.
