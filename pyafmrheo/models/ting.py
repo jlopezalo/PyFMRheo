@@ -122,7 +122,8 @@ class TingModel:
         # Get t max value.
         tm = time[idx_tm]
         # Determine non contact trace region.
-        idxNCt=np.where(time<0)
+        idxNCt=np.where(time<0)[0]
+        print(idxNCt)
         # Determine contact trace region
         idxCt=np.where(time>=0)[0]
         print(idxCt)
