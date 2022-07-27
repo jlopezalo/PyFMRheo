@@ -123,14 +123,11 @@ class TingModel:
         tm = time[idx_tm]
         # Determine non contact trace region.
         idxNCt=np.where(time<0)[0]
-        print(idxNCt)
         # Determine contact trace region
         idxCt=np.where(time>=0)[0]
-        print(idxCt)
         # Get indices corresponding to contact trace region.
         # Including t max.
         idxCt = np.arange(idxCt[0], idx_tm + 1)
-        print(idxCt)
         # Determine contact time trace.
         ttc=time[idxCt]
         if v0t is None:
@@ -173,7 +170,6 @@ class TingModel:
         # time region where t1 is larger than 0. 
         idxCr=idxCr[:len(trc)]
         # Assign the value of F0 to the non contact region.
-        print(idxNCt)
         FtNC=F0*np.ones(idxNCt.size)
         # Compute Force according to the selected mode:
         if modelFt == 'analytical':
