@@ -124,17 +124,17 @@ class TingModel:
         geom_coeff, geom_exp = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Shift time using t at contact.
         time=time-tc
-        print(f'time --> {time}')
-        print(f'tc --> {tc}')
+        # print(f'time --> {time}')
+        # print(f'tc --> {tc}')
         # Compute deltat.
         deltat=time[1]-time[0]
-        print(f'idx_tm --> {idx_tm}')
+        # print(f'idx_tm --> {idx_tm}')
         # If no t max index is given search the index of F max.
         if idx_tm is None:
             idx_tm = np.argmax(F)
         # Get t max value.
         tm = time[idx_tm]
-        print(f'tm --> {tm}')
+        # print(f'tm --> {tm}')
         # Determine non contact trace region.
         idxNCt=np.where(time<0)[0]
         # Determine contact trace region
