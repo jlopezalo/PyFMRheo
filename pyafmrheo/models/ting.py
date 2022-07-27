@@ -4,6 +4,16 @@ from scipy.optimize import curve_fit
 from .geom_coeffs import get_coeff
 from ..utils.signal_processing import numdiff, smoothM, hyp2f1_apprx
 
+def smooth(a,WSZ):
+    # a: NumPy 1-D array containing the data to be smoothed
+    # WSZ: smoothing window size needs, which must be odd number,
+    # as in the original MATLAB implementation
+    out0 = np.convolve(a,np.ones(WSZ,dtype=int),'valid')/WSZ    
+    r = np.arange(1,WSZ-1,2)
+    start = np.cumsum(a[:WSZ-1])[::2]/r
+    stop = (np.cumsum(a[:-WSZ:-1])[::2]/r)[::-1]
+    return np.concatenate((  start , out0, stop  ))
+
 class TingModel:
     def __init__(self, ind_geom, tip_param, modelFt) -> None:
         # Tip geomtry params
@@ -80,12 +90,12 @@ class TingModel:
     def SolveNumerical(self, delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr):
         delta0 = delta - delta[idxCt[0]]
         delta_Uto_dot = np.zeros(len(delta0))
-        A = smoothM(np.r_[numdiff(delta0[idxCt]**geom_exp), numdiff(delta0[idxCr[0]:]**geom_exp)], smooth_w)
+        A = smooth(np.r_[numdiff(delta0[idxCt]**geom_exp), numdiff(delta0[idxCr[0]:]**geom_exp)], smooth_w)
         if len(A) < len(delta_Uto_dot[idxCt[0]:]):
             A = np.append(A, A[-1])
         delta_Uto_dot[idxCt[0]:] = A
         delta_dot = np.zeros(len(delta0))
-        B = smoothM(np.r_[numdiff(delta0[idxCt]), numdiff(delta0[idxCr[0]:])], smooth_w)
+        B = smooth(np.r_[numdiff(delta0[idxCt]), numdiff(delta0[idxCr[0]:])], smooth_w)
         if len(B) < len(delta_Uto_dot[idxCt[0]:]):
             B = np.append(B, B[-1])
         delta_dot[idxCt[0]:] = B
@@ -188,7 +198,7 @@ class TingModel:
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
         # output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
-        output = np.r_[FtNC, FJ+F0, FrNC]+smoothM(numdiff(delta)*vdrag/numdiff(time), 21)
+        output = np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
         # output =  np.r_[FtNC, FJ+F0, FrNC]
         return output
     
