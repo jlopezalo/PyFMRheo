@@ -173,6 +173,7 @@ class TingModel:
         # time region where t1 is larger than 0. 
         idxCr=idxCr[:len(trc)]
         # Assign the value of F0 to the non contact region.
+        print(idxNCt)
         FtNC=F0*np.ones(idxNCt.size)
         # Compute Force according to the selected mode:
         if modelFt == 'analytical':
