@@ -179,6 +179,7 @@ class TingModel:
         # Select the retrace contact indices corresponding to the retrace
         # time region where t1 is larger than 0. 
         idxCr=idxCr[:len(trc)]
+        print(idxCr)
         # Assign the value of F0 to the non contact region.
         FtNC=F0*np.ones(idxNCt.size)
         # Compute Force according to the selected mode:
