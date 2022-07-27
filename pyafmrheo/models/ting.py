@@ -161,12 +161,14 @@ class TingModel:
         # Compute retrace contact time.
         # TO DO: ADD REFERENCE TO ARTICLE!!!!
         tcr=(1+v0r/v0t)**(1/(1-betaE))/((1+v0r/v0t)**(1/(1-betaE))-1)*tm
+        print(tcr)
         # If the retrace contact time is smaller than t max,
         # define the end of the contact retrace region as 3 times t max.
         if not tcr<tm:
             idxCr=np.where((time>tm) & (time<=tcr))[0]
         else:
             idxCr=np.where((time>tm) & (time<=3*tm))[0]
+        print(idxCr)
         # Define in contact retrace region.
         trc=time[idxCr]
         # Compute t1
