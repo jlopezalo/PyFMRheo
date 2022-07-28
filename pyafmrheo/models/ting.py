@@ -84,8 +84,8 @@ class TingModel:
                 Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
                 Frc=-2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
                     trc**(1-betaE)*(trc))
-            # return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag] + F0
-            return np.r_[Ftc, Frc]
+            return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
+            # return np.r_[Ftc, Frc]
     
     def SolveNumerical(self, delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr):
         delta0 = delta - delta[idxCt[0]]
