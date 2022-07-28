@@ -150,4 +150,20 @@ def ComputeBh(
     Bh = np.imag(Hd) / (2 * np.pi * freq)
 
     return Bh, Hd, gamma2
+
+def ComputeComplexModulusTest(
+    force, indentation, fs, freq, ind_shape, tip_parameter,
+    wc, poisson_ratio=0.5, fi=0, amp_quotient=1, bcoef=0, nfft=None, freq_tol=0.0001
+):  
+
+    # Compute transfer function
+    _, G, gamma2, _, _ =\
+         TransferFunction(indentation, force, fs, frequency=freq, nfft=nfft, freq_tol=freq_tol)
+    
+    # Compute G'and G''
+    model_func = single_freq_models[ind_shape]
+    G_storage, G_loss = model_func(G, wc, tip_parameter, freq, fi, bcoef, poisson_ratio)
+
+    return G_storage, G_loss, gamma2
+
     

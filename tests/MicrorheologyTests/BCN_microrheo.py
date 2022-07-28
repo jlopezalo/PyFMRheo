@@ -1,3 +1,4 @@
+from calendar import c
 import sys
 sys.path.insert(0, '../../src')
 from matplotlib.mlab import psd, csd, detrend_linear, window_hanning
@@ -5,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy import signal, fft
 import pandas as pd
 import numpy as np
-from analysis.models.rheology import ComputeComplexModulus
+from pyafmrheo.models.rheology import ComputeComplexModulusTest
 
 # Hard coded values
 frequencies = [0.1000, 0.3500, 1.1500, 3.5500, 11.4500] # Hz
@@ -176,7 +177,7 @@ if __name__ == "__main__":
             indentation_process = indentation_blocs[j] - butter_lowpass_filter(indentation_blocs[j], cutoff, fs, order)
             force_process = force_blocs[j] - butter_lowpass_filter(force_blocs[j], cutoff, fs, order)
             G_storage, G_loss = computeBlocs(force_process, indentation_process, params, freq)
-            G_storage_fft, G_loss_fft, gamma2 = ComputeComplexModulus(force_process, indentation_process, fs, freq, "paraboloid", r, wc*1e-9, bcoef=bcoef)
+            G_storage_fft, G_loscs_fft, gamma2 = ComputeComplexModulusTest(force_process, indentation_process, fs, freq, "paraboloid", r, wc*1e-9, bcoef=bcoef)
             print(gamma2)
             G_storage_all_txy.append(G_storage)
             G_loss_all_txy.append(G_loss)
