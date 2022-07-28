@@ -205,7 +205,7 @@ class TingModel:
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
         # output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
-        output = np.r_[FtNC, FJ, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
+        output = np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
         # output =  np.r_[FtNC, FJ+F0, FrNC]
         return output
     
