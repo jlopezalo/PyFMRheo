@@ -63,6 +63,7 @@ class TingModel:
 
     def SolveAnalytical(self, ttc, trc, t1, model_probe, geom_coeff, v0t, v0r, v0, E0, betaE, t0, F0, vdrag):
         # TO DO: ADD REFERENCE!!!
+        # Paraboloidal geometry
         if model_probe == 'paraboloid':
             Cp=1/geom_coeff
             Ftp=3/2*v0t**(3/2)*E0*t0**betaE*np.sqrt(np.pi)*np.array(gamma(1-betaE), dtype=float)/(Cp*2*np.array(gamma(5/2-betaE), dtype=float))*ttc**(3/2-betaE)
@@ -72,8 +73,8 @@ class TingModel:
             else:
                 Frp=3/Cp*E0*v0t**(3/2)*t0**betaE/(3+4*(betaE-2)*betaE)*t1**(-1/2)*(trc-t1)**(1-betaE)*\
                     (-trc+(2*betaE-1)*t1+trc*hyp2f1_apprx(1, 1/2-betaE, 1/2, t1/trc))
-            # return np.r_[Ftp+v0t*vdrag, Frp-v0r*vdrag] + F0
             return np.r_[Ftp, Frp]
+        # Conical/Pyramidal geometry
         elif model_probe in ('cone', 'pyramid'):
             Cc=1/geom_coeff
             if np.abs(v0r-v0t)/v0t<0.01:
@@ -84,8 +85,7 @@ class TingModel:
                 Ftc=2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*ttc**(2-betaE)
                 Frc=-2*v0t**2*E0*t0**betaE/Cc/(2-3*betaE+betaE**2)*((trc-t1)**(1-betaE)*(trc+(1-betaE)*t1)-\
                     trc**(1-betaE)*(trc))
-            return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
-            # return np.r_[Ftc, Frc]
+            return np.r_[Ftc, Frc]
     
     def SolveNumerical(self, delta, time_, geom_coeff, geom_exp, v0t, v0r, E0, betaE, F0, vdrag, smooth_w, idx_tm, idxCt, idxCr):
         delta0 = delta - delta[idxCt[0]]
@@ -113,9 +113,9 @@ class TingModel:
             t10 = time_[idxCr0]
             idx = np.arange(idxCt[0]+1, idxCt[0]+idx_min_phi0+1)
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
-        # return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
+        return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]+F0
         # return np.r_[Ftc+v0t*vdrag, Frc-v0r*vdrag]
-        return np.r_[Ftc, Frc]
+        # return np.r_[Ftc, Frc]
     
     def model(
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
@@ -204,10 +204,7 @@ class TingModel:
         # Assign the value of F0 to the non contact region.
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
-        # output =  np.r_[FtNC+v0t*vdrag, FJ, FrNC-v0r*vdrag]
-        output = np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
-        # output =  np.r_[FtNC, FJ+F0, FrNC]
-        return output
+        return np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
     
     def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         

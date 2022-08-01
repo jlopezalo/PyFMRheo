@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy import signal, fft
 import pandas as pd
 import numpy as np
-from pyafmrheo.models.rheology import ComputeComplexModulusTest
+from pyafmrheo.models.rheology import TransferFunction, single_freq_models
 
 # Hard coded values
 frequencies = [0.1000, 0.3500, 1.1500, 3.5500, 11.4500] # Hz
@@ -18,6 +18,21 @@ bcoef = 1.55 * 1e-6 # From BCN's code
 GRealBCN = [2.6215, 2.8147, 3.1955, 3.7234, 4.1157]
 GImagBCN = [0.2325, 0.4586, 0.7504, 1.1198, 2.1644]    
 gamma2BCN = [0.9847, 0.9992, 0.9997, 0.9999, 0.9998]
+
+def ComputeComplexModulusTest(
+    force, indentation, fs, freq, ind_shape, tip_parameter,
+    wc, poisson_ratio=0.5, fi=0, amp_quotient=1, bcoef=0, nfft=None, freq_tol=0.0001
+):  
+
+    # Compute transfer function
+    _, G, gamma2, _, _ =\
+         TransferFunction(indentation, force, fs, frequency=freq, nfft=nfft, freq_tol=freq_tol)
+    
+    # Compute G'and G''
+    model_func = single_freq_models[ind_shape]
+    G_storage, G_loss = model_func(G, wc, tip_parameter, freq, fi, bcoef, poisson_ratio)
+
+    return G_storage, G_loss, gamma2
     
 def butter_lowpass(cutoff, fs, order=5):
     nyq = 0.5 * fs
@@ -177,7 +192,7 @@ if __name__ == "__main__":
             indentation_process = indentation_blocs[j] - butter_lowpass_filter(indentation_blocs[j], cutoff, fs, order)
             force_process = force_blocs[j] - butter_lowpass_filter(force_blocs[j], cutoff, fs, order)
             G_storage, G_loss = computeBlocs(force_process, indentation_process, params, freq)
-            G_storage_fft, G_loscs_fft, gamma2 = ComputeComplexModulusTest(force_process, indentation_process, fs, freq, "paraboloid", r, wc*1e-9, bcoef=bcoef)
+            G_storage_fft, G_loss_fft, gamma2 = ComputeComplexModulusTest(force_process, indentation_process, fs, freq, "paraboloid", r, wc*1e-9, bcoef=bcoef)
             print(gamma2)
             G_storage_all_txy.append(G_storage)
             G_loss_all_txy.append(G_loss)
@@ -212,10 +227,10 @@ if __name__ == "__main__":
         print(f"G Loss BCN - G Loss Whole: {(GImagBCN[i] - G_loss_whole) * 1e3} Pa")                   # Pa
         print("\n")
 
-    plt.plot(frequencies, GRealBCN, label="Matlab Real")
-    plt.plot(frequencies, G_storage_means_fft, label="Python Real")
-    plt.plot(frequencies, GImagBCN, label="Matlab Imag")
-    plt.plot(frequencies, G_loss_means_fft, label="Python Imag")
+    plt.plot(frequencies, GRealBCN, 'o-', label="Matlab Real")
+    plt.plot(frequencies, G_storage_means_fft, 'o-', label="Python Real")
+    plt.plot(frequencies, GImagBCN, 'o-', label="Matlab Imag")
+    plt.plot(frequencies, G_loss_means_fft, 'o-', label="Python Imag")
     plt.xlabel("Frequencies [Hz]")
     plt.ylabel("G', G'' [KPa]")
     plt.xscale("log")

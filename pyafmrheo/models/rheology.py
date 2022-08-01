@@ -9,7 +9,7 @@ def model_pyramid(G, wc, half_angle, freq, fi, bcoef, poisson_ratio):
     div = 3 * wc * np.tan(np.radians(half_angle))
     coeff = (1.0 - poisson_ratio) / div
     Piezo_corr = np.exp(-1j * np.radians(fi))
-    G_corr = coeff * 2 * np.pi * bcoef * -1j * freq
+    G_corr = coeff * 2 * np.pi * bcoef * 1j * freq
     G_complex =  G * Piezo_corr * coeff - G_corr
     return G_complex.real, G_complex.imag
 
@@ -21,7 +21,7 @@ def model_paraboloid(G, wc, tip_radius, freq, fi, bcoef, poisson_ratio):
     div = 4 * np.sqrt(tip_radius * wc)
     coeff = (1.0 - poisson_ratio) / div
     Piezo_corr = np.exp(-1j * np.radians(fi))
-    G_corr = coeff * 2 * np.pi * bcoef * -1j * freq
+    G_corr = coeff * 2 * np.pi * bcoef * 1j * freq
     G_complex =  G * Piezo_corr * coeff - G_corr
     return G_complex.real, G_complex.imag
 
@@ -150,20 +150,3 @@ def ComputeBh(
     Bh = np.imag(Hd) / (2 * np.pi * freq)
 
     return Bh, Hd, gamma2
-
-def ComputeComplexModulusTest(
-    force, indentation, fs, freq, ind_shape, tip_parameter,
-    wc, poisson_ratio=0.5, fi=0, amp_quotient=1, bcoef=0, nfft=None, freq_tol=0.0001
-):  
-
-    # Compute transfer function
-    _, G, gamma2, _, _ =\
-         TransferFunction(indentation, force, fs, frequency=freq, nfft=nfft, freq_tol=freq_tol)
-    
-    # Compute G'and G''
-    model_func = single_freq_models[ind_shape]
-    G_storage, G_loss = model_func(G, wc, tip_parameter, freq, fi, bcoef, poisson_ratio)
-
-    return G_storage, G_loss, gamma2
-
-    
