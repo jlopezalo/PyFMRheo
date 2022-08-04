@@ -1,74 +1,30 @@
 # Module containing helper methods for AFM force curves
 
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
 
-def get_poc_RoV_method(piezo_height, deflection, win_size=20, plot_process=False, savepath="."):
-    """
-    Compute point of contact using the ratio of variances method.
-    Reference: doi: 10.1038/srep21267
+def get_poc_RoV_method(app_height, ret_height, app_deflection, windowforCP=350):
+  piezo_height = np.r_[app_height, ret_height]
+  deltaz=np.abs(piezo_height.max()-piezo_height.min())
+  zperpt=deltaz/len(piezo_height)
+  win_size=int(windowforCP/2/zperpt)*2
+  rov_dfl_1 = pd.Series(app_deflection[win_size+1:])
+  rov_dfl_2 = pd.Series(app_deflection[:-win_size])
+  rovi = rov_dfl_1.rolling(win_size, center=True, min_periods=1).var(ddof=0)/\
+          rov_dfl_2.rolling(win_size, center=True, min_periods=1).var(ddof=0)
+  rovi_idx = np.argmax(rovi)
+  rov_poc_x = app_height[rovi_idx]
+  rov_poc_y = app_deflection[rovi_idx]
+  return np.array([rov_poc_x, rov_poc_y])
 
-    Arguments:
-    piezo_height -- z position of the piezo in m
-    deflection -- deflection of the cantilever in m
-    savepath -- path so save the plots showing the results
-    win_size -- number of points to include in each window
-    plot_plocess -- generate plots
+def correct_tilt(
+  app_height, ret_height, app_deflection, ret_deflection, rov_poc_x, max_offset=1000, min_offset=10):
+  mask = (app_height>=rov_poc_x-max_offset) & (app_height<=rov_poc_x-min_offset)
+  z = np.poly1d(np.polyfit(app_height[mask], app_deflection[mask], 1))
+  app_deflection = app_deflection-z(app_height)
+  ret_deflection = ret_deflection-z(ret_height)
+  return app_deflection, ret_deflection
 
-    Returns:
-    Array containing the values for the PoC [x, y] in m
-    """
-
-    # Compute indentation asuming d(0) = 0
-    ind = piezo_height - deflection
-
-    # Array for containing output values
-    rov_arr = np.zeros(ind.shape)
-
-    n = len(deflection)
-
-    # Compute window from %
-
-    win_size = n * (win_size/100)
-
-    # Compute RoV for each point
-    for i in range(n):
-      
-      # Compute variances
-      var_seg1 = np.var(deflection[i + 1 : i + int(np.round(win_size / 2))])
-      var_seg2 = np.var(deflection[i - int(np.round(win_size / 2)) : i - 1])
-      
-      # Compute RoV
-      rov = var_seg1 / var_seg2
-
-      # Check if the outcome of the RoV value is NaN or infinite.
-      # This is cause by variances begin equal to 0.
-      if np.isnan(rov) or np.isinf(rov):
-        rov = 0
-
-      # Assign value to the output array
-      rov_arr[i] = rov
-    
-    # Get the index where the maximum value of RoV is located
-    index = np.argmax(rov_arr)
-    
-    # Get the positions at the index
-    pocx = ind[index]
-    pocy = deflection[index]
-    
-    # Plot the results if requested
-    if plot_process and savepath:
-      fig = plt.figure(figsize=(10, 5))
-      ax = plt.subplot(111)
-      ax.plot(ind, rov_arr)
-      ax.axvline(x=pocx, color='k', linestyle='--', label = 'PoC=%5.3f' % (pocx))
-      ax.set_title("PoC determination by RoV")
-      ax.set_xlabel("height - deflection")
-      ax.set_ylabel("RoV")
-      fig.savefig(f"{savepath}/poc_rov.png")
-
-    return np.array([pocx, pocy])
-  
 def correct_viscous_drag(
   ind_approach, force_approach, ind_retract, force_retract, poly_order=2, speed=None):
 

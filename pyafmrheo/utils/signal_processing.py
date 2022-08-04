@@ -5,7 +5,8 @@ from scipy.special import beta
 
 def hyp2f1_apprx(a, b, c, x):
     # approximation to hypergeometric function 2F1([a, b], c, x)
-    # for 0<a<c, x>=0 and b>=0(Butler and Wood, 2000, Annals of Statistics)
+    # for 0<a<c, x>=0 and b>=0
+    # (Butler and Wood, 2000, Annals of Statistics)
     tau=x*(b-a)-c
     yhat=2*a/(np.sqrt(tau**2-4*a*x*(c-b))-tau)
 
@@ -26,25 +27,15 @@ def numdiff(y):
     diffy[len(diffy)-3:]=diffy[len(diffy)-4]
     return diffy
 
-def smoothM(d, parS):
-    y = d
-    DL = len(d)-1
-    for ij in range(len(d)-1):
-        if np.isnan(y[ij]):
-            k = 0
-            while np.isnan(y[ij]) and ij+k < DL:
-                k += 1
-                y[ij] = y[ij+k]
-    if parS > 1:
-        y[1] = (d[1] + d[2] + d[3])/3
-        y[-2] = (d[DL-2] + d[DL-1] + d[DL])/3
-    if parS in [2, 3]: #for 2 and 3
-        for ij in range(2, DL-2):
-            y[ij] = (d[ij-1] + d[ij] + d[ij+1])/3
-    if parS >= 4:  # :for 4 and 5 and any more
-        for n in range(2, DL-2):
-            y[n] = (d[n-2] + d[n-1] + d[n] + d[n+1] + d[n+2])/5
-    return y
+def smooth(a,WSZ):
+    # a: NumPy 1-D array containing the data to be smoothed
+    # WSZ: smoothing window size needs, which must be odd number,
+    # as in the original MATLAB implementation
+    out0 = np.convolve(a,np.ones(WSZ,dtype=int),'valid')/WSZ    
+    r = np.arange(1,WSZ-1,2)
+    start = np.cumsum(a[:WSZ-1])[::2]/r
+    stop = (np.cumsum(a[:-WSZ:-1])[::2]/r)[::-1]
+    return np.concatenate((  start , out0, stop  ))
 
 def detrend_rolling_average(
     seg_freq, seg_in_signal, seg_out_signal, seg_time, in_signal_label, out_signal_label, messages):

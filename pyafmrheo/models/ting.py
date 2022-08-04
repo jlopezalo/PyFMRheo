@@ -1,18 +1,8 @@
 import numpy as np
-from scipy.special import hyp2f1, gamma
-from scipy.optimize import curve_fit
+from scipy.special import gamma
+from lmfit import Model, Parameters
 from .geom_coeffs import get_coeff
-from ..utils.signal_processing import numdiff, smoothM, hyp2f1_apprx
-
-def smooth(a,WSZ):
-    # a: NumPy 1-D array containing the data to be smoothed
-    # WSZ: smoothing window size needs, which must be odd number,
-    # as in the original MATLAB implementation
-    out0 = np.convolve(a,np.ones(WSZ,dtype=int),'valid')/WSZ    
-    r = np.arange(1,WSZ-1,2)
-    start = np.cumsum(a[:WSZ-1])[::2]/r
-    stop = (np.cumsum(a[:-WSZ:-1])[::2]/r)[::-1]
-    return np.concatenate((  start , out0, stop  ))
+from ..utils.signal_processing import numdiff, smooth, hyp2f1_apprx
 
 class TingModel:
     def __init__(self, ind_geom, tip_param, modelFt) -> None:
@@ -60,6 +50,16 @@ class TingModel:
         self.smooth_w = None
         # Moximum indentation time
         self.idx_tm = None
+        # Window size of points to downsample the signal for fit
+        self.downsamp_nb_pts = 300
+    
+    def build_params(self):
+        params = Parameters()
+        params.add('E0', value=self.E0_init, min=self.E0_min, max=self.E0_max)
+        params.add('tc', value=self.tc_init, min=self.tc_min, max=self.tc_max)
+        params.add('betaE', value=self.betaE_init, min=self.betaE_min, max=self.betaE_max)
+        params.add('F0', value=self.F0_init, min=self.F0_min, max=self.F0_max)
+        return params
 
     def SolveAnalytical(self, ttc, trc, t1, model_probe, geom_coeff, v0t, v0r, v0, E0, betaE, t0, F0, vdrag):
         # TO DO: ADD REFERENCE!!!
@@ -205,51 +205,41 @@ class TingModel:
         return np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
     
     def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
-        
-        # Assing idx_tm and smooth_w
+        # Define fixed params
         self.t0 = t0
         self.idx_tm = idx_tm
         self.smooth_w = smooth_w
         self.v0t = v0t
         self.v0r = v0r
-        self.E0_min = self.E0_init/1e10
-        self.E0_max = self.E0_init * 1e5
-        downfactor = len(time) // 300
-        self.tc_min = self.tc_init-downfactor/(1/(time[1]-time[0]))*10
-        self.tc_max = self.tc_init+downfactor/(1/(time[1]-time[0]))*10
-        self.F0_min = self.F0_init-100e-12
-        self.F0_max = self.F0_init+100e-12
-        # Param order:
-        p0 = [self.E0_init, self.tc_init, self.betaE_init,self.F0_init]
-        LB = [self.E0_min, self.tc_min, self.betaE_min, self.F0_min]
-        UB = [self.E0_max, self.tc_max, self.betaE_max, self.F0_max]
         
+        # Define fixed params
         fixed_params = {
-            't0': self.t0,
-            'F': F,
-            'delta': delta,
-            'modelFt': self.modelFt,
-            'vdrag': self.vdrag,
-            'smooth_w': self.smooth_w,
-            'idx_tm': self.idx_tm,
-            'v0t': self.v0t, 
-            'v0r': self.v0r
+            't0': self.t0, 'F': F, 'delta': delta,
+            'modelFt': self.modelFt, 'vdrag': self.vdrag, 'smooth_w': self.smooth_w,
+            'idx_tm': self.idx_tm, 'v0t': self.v0t, 'v0r': self.v0r
         }
-
+        
+        # Prepare model for fit using fixed params
         tingmodel =\
             lambda time, E0, tc, betaE, F0: self.model(time, E0, tc, betaE, F0, **fixed_params)
+        tingmodelfit = Model(tingmodel)
+        
+        # Define free params
+        params = self.build_params()
         
         # Do fit
-        self.n_params = len(p0)
-        res, _ = curve_fit(
-            tingmodel, time, F, p0, bounds=[LB, UB])
-
+        self.n_params = len(tingmodelfit.param_names)
+        downfactor= len(time) // self.downsamp_nb_pts
+        idxDown = list(range(0, len(time), downfactor))
+        result_ting = tingmodelfit.fit(F[idxDown], params, time=time[idxDown])
+        
         # Assign fit results to model params
-        self.E0 = res[0]
-        self.tc = res[1]
-        self.betaE = res[2]
-        self.F0 = res[3]
+        self.E0 = result_ting.best_values['E0']
+        self.tc = result_ting.best_values['tc']
+        self.betaE = result_ting.best_values['betaE']
+        self.F0 = result_ting.best_values['F0']
 
+        # Compute metrics
         modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
 
         absError = modelPredictions - F

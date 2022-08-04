@@ -3,6 +3,7 @@ from scipy.optimize import curve_fit
 
 class SHOModel:
     def __init__(self):
+        self.n_params = None
         # A white
         self.Awhite = None
         self.Awhite_init = None
@@ -72,6 +73,8 @@ class SHOModel:
         self.A = res[1]
         self.fR = res[2]
         self.Q = res[3]
+
+        self.n_params = 4
 
         modelPredictions = self.eval(freq)
 
