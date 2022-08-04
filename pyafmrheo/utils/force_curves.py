@@ -3,10 +3,9 @@
 import numpy as np
 import pandas as pd
 
-def get_poc_RoV_method(app_height, ret_height, app_deflection, windowforCP=350):
-  piezo_height = np.r_[app_height, ret_height]
-  deltaz=np.abs(piezo_height.max()-piezo_height.min())
-  zperpt=deltaz/len(piezo_height)
+def get_poc_RoV_method(app_height, app_deflection, windowforCP=350*1e-9):
+  deltaz=np.abs(app_height.max()-app_height.min())
+  zperpt=deltaz/len(app_height)
   win_size=int(windowforCP/2/zperpt)*2
   rov_dfl_1 = pd.Series(app_deflection[win_size+1:])
   rov_dfl_2 = pd.Series(app_deflection[:-win_size])
