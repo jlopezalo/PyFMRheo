@@ -71,11 +71,10 @@ class SHOModel:
         
         # Define free params
         params = self.build_params()
+        self.n_params = len(shomodelfit.param_names)
         
         # Do fit
         result_sho = shomodelfit.fit(ampl, params, freq=freq)
-
-        self.n_params = len(result_sho.param_names)
         
         # Assign fit results to model params
         self.Awhite = result_sho.best_values['Awhite']
