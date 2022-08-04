@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import curve_fit
+from lmfit import Model, Parameters
 
 class SHOModel:
     def __init__(self):
@@ -32,6 +32,14 @@ class SHOModel:
         self.Rsquared = None
         self.chisq = None
         self.redchi = None
+    
+    def build_params(self):
+        params = Parameters()
+        params.add('Awhite', value=self.Awhite_init, min=self.Awhite_min, max=self.Awhite_max)
+        params.add('A', value=self.A_init, min=self.A_min, max=self.A_max)
+        params.add('fR', value=self.fR_init, min=self.fR_min, max=self.fR_max)
+        params.add('Q', value=self.Q_init, min=self.Q_min, max=self.Q_max)
+        return params
 
     def objective(self, freq, Awhite, A, fR, Q):
         return Awhite**2 + A**2 * fR**4 / Q**2 * ((freq**2-fR**2)**2 + freq**2 * fR**2 / Q**2)**(-1)
@@ -59,22 +67,21 @@ class SHOModel:
         self.fR_max = self.fR_max or max_amp_freq*3
         self.Q_max = self.Q_max or 100
 
-        p0 = [self.Awhite_init, self.A_init, self.fR_init, self.Q_init]
+        shomodelfit = Model(self.objective)
         
-        bounds = [
-            [self.Awhite_min, self.A_min, self.fR_min, self.Q_min],
-            [self.Awhite_max, self.A_max, self.fR_max, self.Q_max]
-        ]
+        # Define free params
+        params = self.build_params()
         
-        res, _ = curve_fit(self.objective, freq, ampl, p0, bounds=bounds)
+        # Do fit
+        result_sho = shomodelfit.fit(ampl, params, freq=freq)
+
+        self.n_params = len(result_sho.param_names)
         
         # Assign fit results to model params
-        self.Awhite = res[0]
-        self.A = res[1]
-        self.fR = res[2]
-        self.Q = res[3]
-
-        self.n_params = 4
+        self.Awhite = result_sho.best_values['Awhite']
+        self.A = result_sho.best_values['A']
+        self.fR = result_sho.best_values['fR']
+        self.Q = result_sho.best_values['Q']
 
         modelPredictions = self.eval(freq)
 
@@ -126,3 +133,41 @@ class SHOModel:
 
 
 
+def ThermalFit(freq, ampl):
+
+    params = Parameters()
+
+    max_amp_indx = np.argmax(ampl)
+    max_amp_freq = freq[max_amp_indx]
+    max_amp = ampl[max_amp_indx]
+
+    # Find p0
+    Awhite_0 = np.sqrt((ampl[1]))
+    A_0 = np.sqrt(max_amp)
+    fR_0 = max_amp_freq
+    Q_0 = 1
+    
+    # Define lower bounds
+    Awhite_lb = np.sqrt(np.min(ampl)/100)
+    A_lb = np.sqrt(np.max(ampl)/100)
+    fR_lb = max_amp_freq/3
+    Q_lb = 0.1
+
+    # Define upper bounds
+    Awhite_ub = np.sqrt(np.max(ampl)*10)
+    A_ub = np.sqrt(np.max(ampl)*10) 
+    fR_ub = max_amp_freq*3 
+    Q_ub = 100
+
+    # Define varying parameters for the hertz fit
+    params.add('Awhite', value=Awhite_0, min=Awhite_lb, max=Awhite_ub)
+    params.add('A', value=A_0, min=A_lb, max=A_ub)
+    params.add('fR', value=fR_0, min=fR_lb, max=fR_ub)
+    params.add('Q', value=Q_0, min=Q_lb, max=Q_ub)
+
+    func_sho = Model(SHO_model)
+
+    print(f'SHO parameter names: {func_sho.param_names}')
+    print(f'SHO independent variables: {func_sho.independent_vars}')
+
+    return func_sho.fit(ampl, params, freq=freq)
