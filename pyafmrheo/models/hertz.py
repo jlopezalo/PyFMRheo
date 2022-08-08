@@ -78,7 +78,7 @@ class HertzModel:
             params.add('slope', value=self.slope_init, min=self.slope_min, max=self.slope_max)
         return params
 
-    def objective(self, indentation, delta0, E0, f0, slope=None, sample_height=None):
+    def model(self, indentation, delta0, E0, f0, slope=None, sample_height=None):
         # Define output array
         force = np.zeros(indentation.shape)
         # Find the index where indentation is 0
@@ -116,10 +116,10 @@ class HertzModel:
         # delta0, E0, f0, slope
         if self.fit_hline_flag:
             hertzmodel =\
-             lambda indentation, delta0, E0, f0, slope: self.objective(indentation, delta0, E0, f0, slope, self.sample_height)
+             lambda indentation, delta0, E0, f0, slope: self.model(indentation, delta0, E0, f0, slope, self.sample_height)
         else:
             hertzmodel =\
-             lambda indentation, delta0, E0, f0: self.objective(indentation, delta0, E0, f0, self.slope, self.sample_height)
+             lambda indentation, delta0, E0, f0: self.model(indentation, delta0, E0, f0, self.slope, self.sample_height)
         
         hertzmodelfit = Model(hertzmodel)
         
@@ -152,7 +152,7 @@ class HertzModel:
         self.redchi = self.get_red_chisq(indentation, force, sample_height)
 
     def eval(self, indentation, sample_height=None):
-        return self.objective(indentation, self.delta0, self.E0, self.f0, self.slope, sample_height)
+        return self.model(indentation, self.delta0, self.E0, self.f0, self.slope, sample_height)
     
     def get_residuals(self, indentation, force,  sample_height=None):
         return force - self.eval(indentation, sample_height)

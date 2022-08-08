@@ -41,7 +41,7 @@ class SHOModel:
         params.add('Q', value=self.Q_init, min=self.Q_min, max=self.Q_max)
         return params
 
-    def objective(self, freq, Awhite, A, fR, Q):
+    def model(self, freq, Awhite, A, fR, Q):
         return Awhite**2 + A**2 * fR**4 / Q**2 * ((freq**2-fR**2)**2 + freq**2 * fR**2 / Q**2)**(-1)
 
     def fit(self, freq, ampl):
@@ -67,7 +67,7 @@ class SHOModel:
         self.fR_max = self.fR_max or max_amp_freq*3
         self.Q_max = self.Q_max or 100
 
-        shomodelfit = Model(self.objective)
+        shomodelfit = Model(self.model)
         
         # Define free params
         params = self.build_params()
@@ -97,7 +97,7 @@ class SHOModel:
         self.redchi = self.get_red_chisq(freq, ampl)
     
     def eval(self, freq):
-        return self.objective(freq, self.Awhite, self.A, self.fR, self.Q)
+        return self.model(freq, self.Awhite, self.A, self.fR, self.Q)
     
     def get_residuals(self, time, wave):
         return wave - self.eval(time)

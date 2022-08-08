@@ -34,7 +34,7 @@ class DragSphereModel:
         self.dynamic_visc = dynamic_visc
 
         drag_sphere_model =\
-            lambda distance, a_eff, h_eff: self.objective(distance, a_eff, h_eff, self.dynamic_visc)
+            lambda distance, a_eff, h_eff: self.model(distance, a_eff, h_eff, self.dynamic_visc)
 
         drag_sphere_model_fit = Model(drag_sphere_model)
 
@@ -64,7 +64,7 @@ class DragSphereModel:
         self.redchi = self.get_red_chisq(distance, dynamic_visc)
 
     def eval(self, distance, dynamic_visc):
-        return self.objective(distance, self.a_eff, self.h_eff, dynamic_visc)
+        return self.model(distance, self.a_eff, self.h_eff, dynamic_visc)
     
     def get_chisq(self, x, y, dynamic_visc):
         return np.sum(((y - self.eval(x, dynamic_visc))/np.std(y))**2)

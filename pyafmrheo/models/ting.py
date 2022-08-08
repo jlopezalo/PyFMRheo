@@ -1,3 +1,4 @@
+from json import detect_encoding
 import numpy as np
 from scipy.special import gamma
 from lmfit import Model, Parameters
@@ -220,6 +221,7 @@ class TingModel:
         # Prepare model for fit using fixed params
         tingmodel =\
             lambda time, E0, tc, betaE, F0: self.model(time, E0, tc, betaE, F0, **fixed_params)
+        
         tingmodelfit = Model(tingmodel)
         
         # Define free params
@@ -227,6 +229,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(tingmodelfit.param_names)
+
         result_ting = tingmodelfit.fit(F, params, time=time)
         
         # Assign fit results to model params
