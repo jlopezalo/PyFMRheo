@@ -50,8 +50,6 @@ class TingModel:
         self.smooth_w = None
         # Moximum indentation time
         self.idx_tm = None
-        # Window size of points to downsample the signal for fit
-        self.downsamp_nb_pts = 300
     
     def build_params(self):
         params = Parameters()
@@ -229,9 +227,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(tingmodelfit.param_names)
-        downfactor= len(time) // self.downsamp_nb_pts
-        idxDown = list(range(0, len(time), downfactor))
-        result_ting = tingmodelfit.fit(F[idxDown], params, time=time[idxDown])
+        result_ting = tingmodelfit.fit(F, params, time=time)
         
         # Assign fit results to model params
         self.E0 = result_ting.best_values['E0']
