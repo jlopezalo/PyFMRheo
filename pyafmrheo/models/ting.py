@@ -217,7 +217,7 @@ class TingModel:
         
         # Define fixed params
         fixed_params = {
-            't0': self.t0, 'F': F, 'delta': delta[idxDown].astype(float),
+            't0': self.t0, 'F': F, 'delta': np.array(delta[idxDown]),
             'modelFt': self.modelFt, 'vdrag': self.vdrag, 'smooth_w': self.smooth_w,
             'idx_tm': self.idx_tm, 'v0t': self.v0t, 'v0r': self.v0r
         }
@@ -232,7 +232,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(tingmodelfit.param_names)
-        result_ting = tingmodelfit.fit(F[idxDown].astype(float), params, time=time[idxDown].astype(float))
+        result_ting = tingmodelfit.fit(np.array(F[idxDown]), params, time=np.array(time[idxDown]))
         
         # Assign fit results to model params
         self.E0 = result_ting.best_values['E0']
