@@ -11,7 +11,7 @@ def get_poc_RoV_method(app_height, app_deflection, windowforCP=350*1e-9):
   rov_dfl_2 = pd.Series(app_deflection[:-win_size])
   rovi = rov_dfl_1.rolling(win_size, center=True, min_periods=1).var(ddof=0)/\
           rov_dfl_2.rolling(win_size, center=True, min_periods=1).var(ddof=0)
-  rovi_idx = np.argmax(rovi)
+  rovi_idx = np.argmax(np.array(rovi))
   rov_poc_x = app_height[rovi_idx]
   rov_poc_y = app_deflection[rovi_idx]
   return np.array([rov_poc_x, rov_poc_y])
