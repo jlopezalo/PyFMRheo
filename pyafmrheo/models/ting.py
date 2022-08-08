@@ -204,7 +204,7 @@ class TingModel:
         # Concatenate non contact regions to the contact region. And return.
         return np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
     
-    def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
+    def fit(self, time, force, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         # Define fixed params
         self.t0 = t0
         self.idx_tm = idx_tm
@@ -217,7 +217,7 @@ class TingModel:
         
         # Define fixed params
         fixed_params = {
-            't0': self.t0, 'F': F, 'delta': np.array(delta[idxDown]),
+            't0': self.t0, 'F': force, 'delta':delta[idxDown],
             'modelFt': self.modelFt, 'vdrag': self.vdrag, 'smooth_w': self.smooth_w,
             'idx_tm': self.idx_tm, 'v0t': self.v0t, 'v0r': self.v0r
         }
@@ -232,7 +232,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(tingmodelfit.param_names)
-        result_ting = tingmodelfit.fit(np.array(F[idxDown]), params, time=np.array(time[idxDown]))
+        result_ting = tingmodelfit.fit(force[idxDown], params, time=time[idxDown])
         
         # Assign fit results to model params
         self.E0 = result_ting.best_values['E0']
@@ -241,19 +241,19 @@ class TingModel:
         self.F0 = result_ting.best_values['F0']
 
         # Compute metrics
-        modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
+        modelPredictions = self.eval(time, force, delta, t0, idx_tm, smooth_w, v0t, v0r)
 
-        absError = modelPredictions - F
+        absError = modelPredictions - force
 
         self.MAE = np.mean(absError) # mean absolute error
         self.SE = np.square(absError) # squared errors
         self.MSE = np.mean(self.SE) # mean squared errors
         self.RMSE = np.sqrt(self.MSE) # Root Mean Squared Error, RMSE
-        self.Rsquared = 1.0 - (np.var(absError) / np.var(F))
+        self.Rsquared = 1.0 - (np.var(absError) / np.var(force))
 
         # Get goodness of fit params
-        self.chisq = self.get_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
-        self.redchi = self.get_red_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
+        self.chisq = self.get_chisq(time, force, delta, t0, idx_tm, smooth_w, v0t, v0r)
+        self.redchi = self.get_red_chisq(time, force, delta, t0, idx_tm, smooth_w, v0t, v0r)
 
     def eval(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         return self.model(
