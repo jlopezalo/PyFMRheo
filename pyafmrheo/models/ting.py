@@ -50,8 +50,6 @@ class TingModel:
         self.smooth_w = None
         # Moximum indentation time
         self.idx_tm = None
-        # Window size of points to downsample the signal for fit
-        self.downsamp_nb_pts = 300
     
     def build_params(self):
         params = Parameters()
@@ -115,7 +113,7 @@ class TingModel:
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
         return np.r_[Ftc, Frc]
     
-    def objective(
+    def model(
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
         idx_tm=None, smooth_w=None, v0t=None, v0r=None
         ):
@@ -204,27 +202,24 @@ class TingModel:
         # Concatenate non contact regions to the contact region. And return.
         return np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
     
-    def fit(self, time, force, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
+    def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         # Define fixed params
         self.t0 = t0
         self.idx_tm = idx_tm
         self.smooth_w = smooth_w
         self.v0t = v0t
         self.v0r = v0r
-
-        downfactor= len(time) // self.downsamp_nb_pts
-        idxDown = list(range(0, len(time), downfactor))
         
         # Define fixed params
         fixed_params = {
-            't0': self.t0, 'F': force, 'delta':delta[idxDown],
+            't0': self.t0, 'F': F, 'delta': delta,
             'modelFt': self.modelFt, 'vdrag': self.vdrag, 'smooth_w': self.smooth_w,
             'idx_tm': self.idx_tm, 'v0t': self.v0t, 'v0r': self.v0r
         }
         
         # Prepare model for fit using fixed params
         tingmodel =\
-            lambda time, E0, tc, betaE, F0: self.objective(time, E0, tc, betaE, F0, **fixed_params)
+            lambda time, E0, tc, betaE, F0: self.model(time, E0, tc, betaE, F0, **fixed_params)
         tingmodelfit = Model(tingmodel)
         
         # Define free params
@@ -232,7 +227,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(tingmodelfit.param_names)
-        result_ting = tingmodelfit.fit(force[idxDown], params, time=time[idxDown])
+        result_ting = tingmodelfit.fit(F, params, time=time)
         
         # Assign fit results to model params
         self.E0 = result_ting.best_values['E0']
@@ -241,19 +236,19 @@ class TingModel:
         self.F0 = result_ting.best_values['F0']
 
         # Compute metrics
-        modelPredictions = self.eval(time, force, delta, t0, idx_tm, smooth_w, v0t, v0r)
+        modelPredictions = self.eval(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
 
-        absError = modelPredictions - force
+        absError = modelPredictions - F
 
         self.MAE = np.mean(absError) # mean absolute error
         self.SE = np.square(absError) # squared errors
         self.MSE = np.mean(self.SE) # mean squared errors
         self.RMSE = np.sqrt(self.MSE) # Root Mean Squared Error, RMSE
-        self.Rsquared = 1.0 - (np.var(absError) / np.var(force))
+        self.Rsquared = 1.0 - (np.var(absError) / np.var(F))
 
         # Get goodness of fit params
-        self.chisq = self.get_chisq(time, force, delta, t0, idx_tm, smooth_w, v0t, v0r)
-        self.redchi = self.get_red_chisq(time, force, delta, t0, idx_tm, smooth_w, v0t, v0r)
+        self.chisq = self.get_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
+        self.redchi = self.get_red_chisq(time, F, delta, t0, idx_tm, smooth_w, v0t, v0r)
 
     def eval(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
         return self.model(
