@@ -115,7 +115,7 @@ class TingModel:
             Frc[j-idx_tm-1] = geom_coeff * E0 * np.trapz(delta_Uto_dot[idx]*t10**(-betaE))
         return np.r_[Ftc, Frc]
     
-    def model(
+    def objective(
         self, time, E0, tc, betaE, F0, t0, F, delta, modelFt, vdrag,
         idx_tm=None, smooth_w=None, v0t=None, v0r=None
         ):
@@ -224,7 +224,7 @@ class TingModel:
         
         # Prepare model for fit using fixed params
         tingmodel =\
-            lambda time, E0, tc, betaE, F0: self.model(time, E0, tc, betaE, F0, **fixed_params)
+            lambda time, E0, tc, betaE, F0: self.objective(time, E0, tc, betaE, F0, **fixed_params)
         tingmodelfit = Model(tingmodel)
         
         # Define free params
