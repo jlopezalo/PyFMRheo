@@ -50,6 +50,8 @@ class TingModel:
         self.smooth_w = None
         # Moximum indentation time
         self.idx_tm = None
+        # Window size of points to downsample the signal for fit
+        self.downsamp_nb_pts = 300
     
     def build_params(self):
         params = Parameters()
@@ -200,7 +202,6 @@ class TingModel:
         # Assign the value of F0 to the non contact region.
         FrNC=F0*np.ones(idxNCr.size)
         # Concatenate non contact regions to the contact region. And return.
-        print(np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21))
         return np.r_[FtNC, FJ+F0, FrNC]+smooth(numdiff(delta)*vdrag/numdiff(time), 21)
     
     def fit(self, time, F, delta, t0, idx_tm=None, smooth_w=None, v0t=None, v0r=None):
@@ -210,10 +211,13 @@ class TingModel:
         self.smooth_w = smooth_w
         self.v0t = v0t
         self.v0r = v0r
+
+        downfactor= len(time) // self.downsamp_nb_pts
+        idxDown = list(range(0, len(time), downfactor))
         
         # Define fixed params
         fixed_params = {
-            't0': self.t0, 'F': F, 'delta': delta,
+            't0': self.t0, 'F': F, 'delta': delta[idxDown],
             'modelFt': self.modelFt, 'vdrag': self.vdrag, 'smooth_w': self.smooth_w,
             'idx_tm': self.idx_tm, 'v0t': self.v0t, 'v0r': self.v0r
         }
@@ -228,7 +232,7 @@ class TingModel:
         
         # Do fit
         self.n_params = len(tingmodelfit.param_names)
-        result_ting = tingmodelfit.fit(F, params, time=time)
+        result_ting = tingmodelfit.fit(F[idxDown], params, time=time[idxDown])
         
         # Assign fit results to model params
         self.E0 = result_ting.best_values['E0']
