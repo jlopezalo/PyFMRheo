@@ -224,6 +224,10 @@ class TingModel:
         
         # Define free params
         params = self.build_params()
+
+        print(params)
+
+        print(F)
         
         # Do fit
         self.n_params = len(tingmodelfit.param_names)
