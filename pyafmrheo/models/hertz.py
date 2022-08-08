@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import curve_fit
+from lmfit import Model, Parameters
 
 from .bec import (
     bec_dimitriadis_paraboloid_bonded, bec_dimitriadis_paraboloid_not_bonded, 
@@ -68,6 +68,15 @@ class HertzModel:
         else:
             # TO DO: Implement custom exception
             raise Exception('BEC model not implemented')
+    
+    def build_params(self):
+        params = Parameters()
+        params.add('delta0', value=self.delta0_init, min=self.delta0_min, max=self.delta0_max)
+        params.add('E0', value=self.E0_init, min=self.E0_min, max=self.E0_max)
+        params.add('f0', value=self.f0_init, min=self.f0_min, max=self.f0_max)
+        if self.fit_hline_flag:
+            params.add('slope', value=self.slope_init, min=self.slope_min, max=self.slope_max)
+        return params
 
     def objective(self, indentation, delta0, E0, f0, slope=None, sample_height=None):
         # Define output array
@@ -106,32 +115,27 @@ class HertzModel:
         # Param order:
         # delta0, E0, f0, slope
         if self.fit_hline_flag:
-            p0 = [self.delta0_init, self.E0_init, self.f0_init, self.slope_init]
-            bounds = [
-                [self.delta0_min, self.E0_min, self.f0_min, self.slope_min],
-                [self.delta0_max, self.E0_max, self.f0_max, self.slope_max]
-            ]
             hertzmodel =\
              lambda indentation, delta0, E0, f0, slope: self.objective(indentation, delta0, E0, f0, slope, self.sample_height)
         else:
-            p0 = [self.delta0_init, self.E0_init, self.f0_init]
-            bounds = [
-                [self.delta0_min, self.E0_min, self.f0_min],
-                [self.delta0_max, self.E0_max, self.f0_max]
-            ]
             hertzmodel =\
              lambda indentation, delta0, E0, f0: self.objective(indentation, delta0, E0, f0, self.slope, self.sample_height)
         
+        hertzmodelfit = Model(hertzmodel)
+        
+        # Define free params
+        params = self.build_params()
+        
         # Do fit
-        self.n_params = len(p0)
-        res, _ = curve_fit(hertzmodel, indentation, force, p0, bounds=bounds)
+        self.n_params = len(hertzmodelfit.param_names)
+        result_hertz = hertzmodelfit.fit(force, params, indentation=indentation)
 
         # Assign fit results to model params
-        self.delta0 = res[0]
-        self.E0 = res[1]
-        self.f0 = res[2]
+        self.delta0 = result_hertz.best_values['delta0']
+        self.E0 = result_hertz.best_values['E0']
+        self.f0 = result_hertz.best_values['f0']
         if self.fit_hline_flag:
-            self.slope = res[3]
+            self.slope = result_hertz.best_values['slope']
         
         modelPredictions = self.eval(indentation, sample_height)
 

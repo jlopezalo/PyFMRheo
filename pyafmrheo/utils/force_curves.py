@@ -17,24 +17,27 @@ def get_poc_RoV_method(app_height, app_deflection, windowforCP=350*1e-9):
   return np.array([rov_poc_x, rov_poc_y])
 
 def correct_tilt(
-  app_height, ret_height, app_deflection, ret_deflection, rov_poc_x, max_offset=1000, min_offset=10):
-  mask = (app_height>=rov_poc_x-max_offset) & (app_height<=rov_poc_x-min_offset)
-  z = np.poly1d(np.polyfit(app_height[mask], app_deflection[mask], 1))
-  app_deflection = app_deflection-z(app_height)
-  ret_deflection = ret_deflection-z(ret_height)
-  return app_deflection, ret_deflection
+  height, deflection, rov_poc_x, max_offset=1000, min_offset=10):
+  mask = (height>=rov_poc_x-max_offset) & (height<=rov_poc_x-min_offset)
+  z = np.poly1d(np.polyfit(height[mask], deflection[mask], 1))
+  deflection = deflection-z(height)
+  return deflection
 
 def correct_viscous_drag(
   ind_approach, force_approach, ind_retract, force_retract, poly_order=2, speed=None):
 
   # Fit approach
   mask_app = ind_approach < 0
-  approach = np.polyfit(ind_approach[mask_app], force_approach[mask_app], poly_order)
+  approach = np.polyfit(
+    ind_approach[mask_app], force_approach[mask_app], poly_order
+  )
   approach_pol = np.poly1d(approach)
 
   # Fit retract
   mask_ret = ind_retract < 0
-  retract = np.polyfit(ind_retract[mask_ret], force_retract[mask_ret], poly_order)
+  retract = np.polyfit(
+    ind_retract[mask_ret], force_retract[mask_ret], poly_order
+  )
   retract_pol = np.poly1d(retract)
 
   if len(mask_app) <= len(mask_ret): mask = mask_app

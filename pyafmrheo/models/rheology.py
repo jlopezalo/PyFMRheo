@@ -79,7 +79,7 @@ def ComputePiezoLag(zheight, deflection, fs, freq, nfft=None, freq_tol=0.0001):
     return fi, amp_quotient, gamma2
 
 
-def ComputeComplexModulus(
+def ComputeComplexModulusFFT(
     deflection, zheight, poc, k, fs, freq, ind_shape, tip_parameter,
     wc, poisson_ratio=0.5, fi=0, amp_quotient=1, bcoef=0, nfft=None, freq_tol=0.0001
 ):  
@@ -102,7 +102,7 @@ def ComputeComplexModulus(
 
     return G_storage, G_loss, gamma2
 
-def ComputeComplexSine(
+def ComputeComplexModulusSine(
     A_defl, A_ind, wc, dPhi, freq, ind_shape,
     tip_parameter, k, poisson_ratio=0.5, amp_quotient=1, bh0=0
 ):  

@@ -1,5 +1,6 @@
+from ast import Mod
 import numpy as np
-from scipy.optimize import curve_fit
+from lmfit import Model, Parameters
 
 class SineModel:
     def __init__(self, ang_freq):
@@ -22,20 +23,35 @@ class SineModel:
         self.Rsquared = None
         self.chisq = None
         self.redchi = None
+    
+    def build_params(self):
+        params = Parameters()
+        params.add('amplitude', value=self.amplitude_init)
+        params.add('phase', value=self.phase_init)
+        params.add('offset', value=self.offset_init)
+        return params
 
-    def objective(self, time, amplitude, phase, offset, ang_freq):
+    def model(self, time, amplitude, phase, offset, ang_freq):
         return amplitude * np.sin(ang_freq * time + phase) + offset
 
     def fit(self, time, wave):
-        p0 = [self.amplitude_init, self.phase_init, self.offset_init]
+
         sinemodel =\
-             lambda time, amplitude, phase, offset: self.objective(time, amplitude, phase, offset, self.ang_freq)
-        res, _ = curve_fit(sinemodel, time, wave, p0)
+             lambda time, amplitude, phase, offset: self.model(time, amplitude, phase, offset, self.ang_freq)
+
+        sinemodelfit = Model(sinemodel)
+
+        # Define free params
+        params = self.build_params()
+
+        # Do fit
+        self.n_params = len(sinemodelfit.param_names)
+        result_sine = sinemodelfit.fit(wave, params, time=time)
         
         # Assign fit results to model params
-        self.amplitude = res[0]
-        self.phase = res[1]
-        self.offset = res[2]
+        self.amplitude = result_sine.best_values['amplitude']
+        self.phase = result_sine.best_values['phase']
+        self.offset = result_sine.best_values['offset']
 
         modelPredictions = self.eval(time)
 
@@ -52,7 +68,7 @@ class SineModel:
         self.redchi = self.get_red_chisq(time, wave)
     
     def eval(self, time):
-        return self.objective(time, self.amplitude, self.phase, self.offset, self.ang_freq)
+        return self.model(time, self.amplitude, self.phase, self.offset, self.ang_freq)
     
     def get_residuals(self, time, wave):
         return wave - self.eval(time)

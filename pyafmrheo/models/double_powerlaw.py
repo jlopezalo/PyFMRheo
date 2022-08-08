@@ -1,30 +1,38 @@
 import numpy as np
-from scipy.optimize import curve_fit
+from lmfit import Model, Parameters
 
 class DoublePowerLawModel:
     def __init__(self) -> None:
         # A factor
         self.A = None
         self.A_init = None
-        self.A_min = None
-        self.A_max = None
+        self.A_min = 0
+        self.A_max = np.inf
         # Alpha
         self.alpha = None
         self.alpha_init = None
-        self.alpha_min = None
-        self.alpha_max = None
+        self.alpha_min = 0
+        self.alpha_max = np.inf
         # B factor
         self.B = None
         self.B_init = None
-        self.B_min = None
-        self.B_max = None
+        self.B_min = 0
+        self.B_max = np.inf
         # Beta
         self.beta = None
         self.beta_init = None
-        self.beta_min = None
-        self.beta_max = None
+        self.beta_min = 0
+        self.beta_max = np.inf
+    
+    def build_params(self):
+        params = Parameters()
+        params.add('A', value=self.A_init, min=self.A_min, max=self.A_max)
+        params.add('B', value=self.B_init, min=self.B_min, max=self.B_max)
+        params.add('alpha', value=self.alpha_init, min=self.alpha_min, max=self.alpha_max)
+        params.add('beta', value=self.beta_init, min=self.beta_min, max=self.beta_max)
+        return params
 
-    def objective(self, freq, A, B, alpha, beta, w0, split_indx):
+    def model(self, freq, A, B, alpha, beta, w0, split_indx):
         if alpha > beta: alpha, beta = beta, alpha
 
         G = np.zeros(freq.shape)
@@ -38,31 +46,45 @@ class DoublePowerLawModel:
         return G
 
     def fit(self, freq, G, w0, split_indx):
-        p0 = [self.A_init, self.B_init, self.alpha_init, self.beta_init]
-        bounds = [
-            [self.A_min, self.B_min, self.alpha_min, self.beta_min],
-            [self.A_max, self.B_max, self.alpha_max, self.beta_max]
-        ]
-        double_pwl_model =\
-            lambda freq, A, B, alpha, beta: self.objective(freq, A, B, alpha, beta, w0, split_indx)
+        
+        fixed_params = {'w0': w0, 'split_indx': split_indx}
+
+        pwlmodel =\
+            lambda freq, A, B, alpha, beta: self.model(freq, A, B, alpha, beta, **fixed_params)
+
+        pwlmodelfit = Model(pwlmodel)
+
+        # Define free params
+        params = self.build_params()
 
         # Do fit
-        res, _ = curve_fit(
-            double_pwl_model, freq, G, p0, bounds=bounds)
+        self.n_params = len(pwlmodelfit.param_names)
+
+        result_pwl = pwlmodelfit.fit(G, params, freq=freq)
 
         # Assign fit results to model params
-        self.A = res[0]
-        self.B = res[1]
-        self.alpha = res[2]
-        self.beta = res[3]
+        self.A = result_pwl.best_values['A']
+        self.B = result_pwl.best_values['B']
+        self.alpha = result_pwl.best_values['alpha']
+        self.beta = result_pwl.best_values['beta']
         
-        # Get goodness of fit params
-        redchi = self.get_red_chisq(freq, G, w0, split_indx)
+        # Compute metrics
+        modelPredictions = self.eval(freq, w0, split_indx)
 
-        return res, redchi
+        absError = modelPredictions - G
+
+        self.MAE = np.mean(absError) # mean absolute error
+        self.SE = np.square(absError) # squared errors
+        self.MSE = np.mean(self.SE) # mean squared errors
+        self.RMSE = np.sqrt(self.MSE) # Root Mean Squared Error, RMSE
+        self.Rsquared = 1.0 - (np.var(absError) / np.var(G))
+
+        # Get goodness of fit params
+        self.chisq = self.get_chisq(freq, G, w0, split_indx)
+        self.redchi = self.get_red_chisq(freq, G, w0, split_indx)
 
     def eval(self, freq, w0, split_indx):
-        return self.objective(freq, self.A, self.B, self.alpha, self.beta, w0, split_indx)
+        return self.model(freq, self.A, self.B, self.alpha, self.beta, w0, split_indx)
 
     def get_chisq(self, x, y, w0, split_indx):
         return np.sum(((y - self.eval(x, w0, split_indx))/np.std(y))**2)
