@@ -24,9 +24,6 @@ def doTingFit(fdc, param_dict):
         ext_data.vdeflection = corr_defl[:idx]
         ret_data.vdeflection = corr_defl[idx:]
     # Perform HertzFit to obtain refined posiiton of PoC
-    # Set on the param dict the option to do correct tilt to
-    # false because it has already been corrected for the extend
-    # and retract.
     param_dict['correct_tilt'] = False
     hertz_result = doHertzFit(fdc, param_dict)
     hertz_d0 = hertz_result.delta0

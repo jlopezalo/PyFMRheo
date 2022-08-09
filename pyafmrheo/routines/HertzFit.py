@@ -1,5 +1,7 @@
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 from ..utils.force_curves import get_poc_RoV_method, correct_tilt
 from ..models.hertz import HertzModel
 
@@ -40,6 +42,8 @@ def doHertzFit(fdc, param_dict):
         cont_ind, cont_force = cont_ind[mask], cont_force[mask]
     indentation = np.r_[ncont_ind, cont_ind]
     force = np.r_[ncont_force, cont_force]
+    plt.plot(indentation, force)
+    plt.show()
     # Perform fit
     hertz_model = HertzModel(param_dict['contact_model'], param_dict['tip_param'])
     hertz_model.fit_hline_flag = param_dict['fit_line']
