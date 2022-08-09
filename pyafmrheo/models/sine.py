@@ -2,7 +2,7 @@ from ast import Mod
 import numpy as np
 from lmfit import Model, Parameters
 
-class SineModel:
+class SineWave:
     def __init__(self, ang_freq):
         # Angular frequency of sine signal
         self.ang_freq = ang_freq

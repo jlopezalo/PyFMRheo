@@ -103,29 +103,45 @@ def ComputeComplexModulusFFT(
     return G_storage, G_loss, gamma2
 
 def ComputeComplexModulusSine(
-    A_defl, A_ind, wc, dPhi, freq, ind_shape,
-    tip_parameter, k, poisson_ratio=0.5, amp_quotient=1, bh0=0
+    A_defl, A_ind, wc, dPhi, freq, ind_shape, tip_parameter,
+    k, fi=0, amp_quotient=1, bcoef=0, poisson_ratio=0.5
 ):  
+
     # Correct indentation amplitude based on amplitude quotient
     # obtained from piezo characterization routine
     A_ind = A_ind * amp_quotient
 
+    # Based on indenter geometry, compute G*
     if ind_shape == "cone":
+        # Geometry dependent params
         n = 2
-        A_lambda = 2 / np.pi * np.tan(np.radians(tip_parameter))
-        G = complex(k * A_defl / A_ind  * np.cos(dPhi),  k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bh0 )
-        return G  * ( ( 1 - poisson_ratio**2 ) / ( n * A_lambda * wc**(n-1) ) )
+        coeff = 2/np.pi * np.tan(np.radians(tip_parameter))
+        # Compute G* correcting for vdrag
+        G = complex(k * A_defl / A_ind  * np.cos(dPhi), k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bcoef)
+        # Correct G* using factor based on phase shift
+        G = G * np.exp(-1j * np.radians(fi))
+        # Scale G* properly
+        return G  * ((1 - poisson_ratio**2) / (n * coeff * wc**(n-1)))
     elif ind_shape == "paraboloid":
+        # Geometry dependent params
         n = 3/2
-        A_lambda = 4 / 3 * np.sqrt(tip_parameter)
-        G = complex( k * A_defl / A_ind  * np.cos(dPhi),  k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bh0 )
-        # print(G)
-        return G  * ( ( 1 - poisson_ratio**2 ) / ( n * A_lambda * wc**(n-1) )  )
+        coeff = 4 / 3 * np.sqrt(tip_parameter)
+        # Compute G* correcting for vdrag
+        G = complex(k * A_defl / A_ind  * np.cos(dPhi), k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bcoef )
+        # Correct G* using factor based on phase shift
+        G = G * np.exp(-1j * np.radians(fi))
+        # Scale G* properly
+        return G  * ((1 - poisson_ratio**2) / (n * coeff * wc**(n-1)))
     elif ind_shape == "pyramid":
+        # Geometry dependent params
         n = 2
-        A_lambda = 4 / ( 3 * np.sqrt(3) ) * np.tan(np.radians(tip_parameter))
-        G = complex( k * A_defl / A_ind  * np.cos(dPhi ),  k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bh0 )
-        return G  * ( ( 1 - poisson_ratio**2 ) / ( n * A_lambda * wc**(n-1) )  )
+        coeff = 4 / (3 * np.sqrt(3)) * np.tan(np.radians(tip_parameter))
+        # Compute G* correcting for vdrag
+        G = complex(k * A_defl / A_ind  * np.cos(dPhi), k * A_defl / A_ind * np.sin(dPhi) -  2 * np.pi * freq * bcoef)
+        # Correct G* using factor based on phase shift
+        G = G * np.exp(-1j * np.radians(fi))
+        # Scale G* properly
+        return G  * ((1 - poisson_ratio**2) / (n * coeff * wc**(n-1)))
 
 
 def ComputeBh(

@@ -1,29 +1,40 @@
-# Import libraries we will need
-import numpy as np
+# Get data analysis tools
+from ..utils.force_curves import get_poc_RoV_method
 from ..utils.signal_processing import detrend_rolling_average
-from ..models.rheology import ComputeBh
+from .HertzFit import doHertzFit
+from ..models.rheology import ComputeComplexModulusFFT
 
-def get_retract_ramp_sizes(force_curve):
-    x0 = 0
-    distances = []
-    sorted_ret_segments = sorted(force_curve.retract_segments, key=lambda x: int(x[0]))
-    for _, ret_seg in sorted_ret_segments[:-1]:
-        # Maybe in the future do not use the ramp size from header and compute
-        # ramp size as zmax - zmin?
-        distance_from_sample = -1 * ret_seg.segment_metadata['ramp_size'] + x0 # Negative
-        distances.append(distance_from_sample * 1e-9) # in nm
-        x0 = distance_from_sample
-    return distances
 
-def doViscousDragSteps(fdc, param_dict):
+def doMicrorheologyFFT(fdc, param_dict):
     # Declare preset params for correcting the raw signals
     fi = 0
     amp_quotient = 1
-    # Get list with the distances from the sample of each segment
-    distances = get_retract_ramp_sizes(fdc)
+    # Get segment data to obtain the working indentation 
+    if param_dict['curve_seg'] == 'extend':
+        segment_data = fdc.extend_segments[0][1]
+    else:
+        segment_data = fdc.retract_segments[-1][1]
+        segment_data.zheight = segment_data.zheight[::-1]
+        segment_data.vdeflection = segment_data.vdeflection[::-1]
+    # Get initial estimate of PoC
+    rov_PoC = get_poc_RoV_method(
+        segment_data.zheight, segment_data.vdeflection, win_size=param_dict['poc_win'])
+    poc = [rov_PoC[0], 0]
+    # Perform HertzFit to obtain refined posiiton of PoC
+    hertz_result = doHertzFit(fdc, param_dict)
+    hertz_d0 = hertz_result.delta0
+    poc[0] += hertz_d0
+    poc[1] = 0
+    # Get force vs indentation data
+    segment_data.get_force_vs_indentation(poc, param_dict['k'])
+    app_indentation = segment_data.indentation
+    # Get working indentation
+    wc = app_indentation.max()
     # Declare empty list to save the results of the different
     # modulation segments of the curve
     results = []
+    # Assume d0 as 0, since we are in contact
+    poc = [0, 0]
     # Iterate thorugh the modulation segments
     # and perform the analysis 
     for _, segment in fdc.modulation_segments:
@@ -50,18 +61,18 @@ def doViscousDragSteps(fdc, param_dict):
         # Detrend the input signals using the rolling average method
         zheight, deflection, _ =\
             detrend_rolling_average(frequency, zheight, deflection, time, 'zheight', 'deflection', [])
-        # Get Bh
-        Bh, Hd, gamma2 =\
-            ComputeBh(
-                deflection, zheight, [0, 0], param_dict['k'],
-                fs, frequency, fi=fi, amp_quotient=amp_quotient
+        # Get G' and G" using the transfer function method
+        G_storage, G_loss, gamma2 =\
+            ComputeComplexModulusFFT(
+                deflection, zheight, poc, param_dict['k'], fs, frequency, param_dict['contact_model'],
+                param_dict['tip_param'], wc, param_dict['poisson'], fi=fi, amp_quotient=amp_quotient, bcoef=param_dict['bcoef']
             )
         # Append segment results
-        results.append((frequency, Bh, Hd, gamma2))
+        results.append((frequency, G_storage, G_loss, gamma2))
     # Organize and unpack the results for the different segments
     results = sorted(results, key=lambda x: int(x[0]))
     frequencies_results = [x[0] for x in results]
-    Bh_results = [x[1] for x in results]
-    Hd_results = np.array([x[2] for x in results])
+    G_storage_results = [x[1] for x in results]
+    G_loss_results = [x[2] for x in results]
     gamma2_results = [x[3] for x in results]
-    return (frequencies_results, Bh_results, Hd_results, gamma2_results, distances)
+    return (frequencies_results, G_storage_results, G_loss_results, gamma2_results)
