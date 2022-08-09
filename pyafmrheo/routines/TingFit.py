@@ -84,7 +84,6 @@ def doTingFit(fdc, param_dict):
     tc_fit = tc-time_fit[0]
     time_fit = time_fit - time_fit[0] - tc_fit
     tc_fit = 0.0
-    tm = time_fit[np.argmax(force_fit)]
     # Compute downfactor
     downfactor= len(time_fit) // param_dict['pts_downsample']
     # Get indices to downsample signal
