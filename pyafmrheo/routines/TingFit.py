@@ -31,10 +31,9 @@ def doTingFit(fdc, param_dict):
     hertz_result = doHertzFit(fdc, param_dict)
     hertz_d0 = hertz_result.delta0
     hertz_E0 = hertz_result.E0
-    poc[0] += hertz_d0
-    poc[1] = 0
     # Shift PoC using d0 obtained in HertzFit
     poc[0] += hertz_d0
+    poc[1] = 0
     # Compute force and indentation with new PoC
     fdc.get_force_vs_indentation(poc, param_dict['k'])
     # Get force, indentation and time from the extend and retract segments
