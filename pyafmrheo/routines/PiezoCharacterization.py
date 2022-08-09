@@ -24,7 +24,3 @@ def doPiezoCharacterization(fdc, param_dict):
     gamma2_results = [x[3] for x in results]
 
     return (frequencies_results, fi_results, amp_quotient_results, gamma2_results)
-
-
-
-
