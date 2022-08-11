@@ -127,6 +127,8 @@ def doTingFit(fdc, param_dict):
     ting_model.F0_init = F0_init[0]
     ting_model.F0_min = f0_min[0]
     ting_model.F0_max = f0_max[0]
+    # vdrag
+    ting_model.vdrag = param_dict['vdrag']
 
     # Do fit
     ting_model.fit(
