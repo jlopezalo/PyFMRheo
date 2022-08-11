@@ -18,7 +18,7 @@ def doMicrorheologyFFT(fdc, param_dict):
         segment_data.vdeflection = segment_data.vdeflection[::-1]
     # Get initial estimate of PoC
     rov_PoC = get_poc_RoV_method(
-        segment_data.zheight, segment_data.vdeflection, win_size=param_dict['poc_win'])
+        segment_data.zheight, segment_data.vdeflection, param_dict['poc_win'])
     poc = [rov_PoC[0], 0]
     # Perform HertzFit to obtain refined posiiton of PoC
     hertz_result = doHertzFit(fdc, param_dict)
