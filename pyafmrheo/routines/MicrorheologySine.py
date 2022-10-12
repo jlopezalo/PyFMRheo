@@ -95,9 +95,9 @@ def doMicrorheologySine(fdc, param_dict):
         dPhi = Phi_defl - Phi_ind
         # Get G* using the amplitude and phase from the fit
         G = ComputeComplexModulusSine(
-            param_dict['contact_model'], param_dict['tip_param'], param_dict['k'], 
-            param_dict['poisson'], A_defl, A_ind, wc, dPhi, frequency, fi=fi,
-            amp_quotient=amp_quotient, bcoef=param_dict['bcoef']
+            A_defl, A_ind, wc, dPhi, frequency, param_dict['contact_model'],
+            param_dict['tip_param'], param_dict['k'], fi=fi, amp_quotient=amp_quotient,
+            bcoef=param_dict['bcoef'], poisson_ratio=param_dict['poisson']
         )
         # Append results of each segment
         results.append((frequency, G.real, G.imag, ind_sine_wave, delf_sine_wave))
