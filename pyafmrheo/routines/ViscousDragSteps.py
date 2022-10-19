@@ -27,7 +27,7 @@ def doViscousDragSteps(fdc, param_dict):
     results = []
     # Iterate thorugh the modulation segments
     # and perform the analysis 
-    for _, segment in fdc.modulation_segments:
+    for seg_id, segment in fdc.modulation_segments:
         time = segment.time
         zheight = segment.zheight
         deflection = segment.vdeflection
@@ -58,11 +58,13 @@ def doViscousDragSteps(fdc, param_dict):
                 fs, frequency, fi=fi, amp_quotient=amp_quotient
             )
         # Append segment results
-        results.append((frequency, Bh, Hd, gamma2))
+        results.append((seg_id, frequency, Bh, Hd, gamma2))
     # Organize and unpack the results for the different segments
+    # As in this routine we expect to have the same frequency on all segments,
+    # the segment ID is used to organize the data instead.
     results = sorted(results, key=lambda x: int(x[0]))
-    frequencies_results = [x[0] for x in results]
-    Bh_results = [x[1] for x in results]
-    Hd_results = np.array([x[2] for x in results])
-    gamma2_results = [x[3] for x in results]
+    frequencies_results = [x[1] for x in results]
+    Bh_results = [x[2] for x in results]
+    Hd_results = np.array([x[3] for x in results])
+    gamma2_results = [x[4] for x in results]
     return (frequencies_results, Bh_results, Hd_results, gamma2_results, distances)
