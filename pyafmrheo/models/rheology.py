@@ -9,7 +9,7 @@ def model_pyramid(G, wc, half_angle, freq, fi, bcoef, poisson_ratio):
     div = 3 * wc * np.tan(np.radians(half_angle))
     coeff = (1.0 - poisson_ratio) / div
     Piezo_corr = np.exp(-1j * np.radians(fi))
-    G_corr = coeff * 2 * np.pi * bcoef * 1j * freq
+    G_corr = coeff * 2 * np.pi * bcoef * -1j * freq
     G_complex =  G * Piezo_corr * coeff - G_corr
     return G_complex.real, G_complex.imag
 
