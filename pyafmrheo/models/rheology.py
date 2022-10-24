@@ -23,7 +23,9 @@ def model_paraboloid(G, wc, tip_radius, freq, fi, bcoef, poisson_ratio):
     coeff = (1.0 - poisson_ratio) / div
     Piezo_corr = np.exp(-1j * np.radians(fi))
     G_corr = coeff * 2 * np.pi * bcoef * 1j * freq
+    print(G_corr)
     G_complex =  G * Piezo_corr * coeff - G_corr
+    print(G_complex)
     return G_complex.real, G_complex.imag
 
 
