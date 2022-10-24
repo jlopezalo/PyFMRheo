@@ -18,6 +18,7 @@ def model_paraboloid(G, wc, tip_radius, freq, fi, bcoef, poisson_ratio):
     # Model for paraboloid indenter.
     # Reference: https://pubmed.ncbi.nlm.nih.gov/16196611/
     # Equation (18)
+    print(G, wc, tip_radius, freq, fi, bcoef, poisson_ratio)
     div = 4 * np.sqrt(tip_radius * wc)
     coeff = (1.0 - poisson_ratio) / div
     Piezo_corr = np.exp(-1j * np.radians(fi))
