@@ -7,12 +7,12 @@ class DragSphereModel:
         # Effecive area of the cantilever
         self.a_eff = None
         self.a_eff_init = 1
-        self.a_eff_min = -np.inf
+        self.a_eff_min = 0
         self.a_eff_max = np.inf
         # Effective height of the cantilever
         self.h_eff = None
         self.h_eff_init = 1
-        self.h_eff_min = -np.inf
+        self.h_eff_min = 0
         self.h_eff_max = np.inf
         # Dynamic viscosity
         self.dynamic_visc = None

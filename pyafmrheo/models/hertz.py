@@ -28,7 +28,7 @@ class HertzModel:
         # Apparent Young's Modulus
         self.E0 = 1000
         self.E0_init = 1000
-        self.E0_min = -np.inf
+        self.E0_min = 0
         self.E0_max = np.inf
         # Contact force
         self.f0 = 0
