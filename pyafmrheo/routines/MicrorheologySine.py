@@ -29,8 +29,16 @@ def doMicrorheologySine(fdc, param_dict):
     # Get force vs indentation data
     segment_data.get_force_vs_indentation(poc, param_dict['k'])
     app_indentation = segment_data.indentation
-    # Get working indentation
-    wc = app_indentation.max()
+    # Get working indentation from the parameters or the approach segment.
+    # Some SFC do not have a good baseline in the approach segment.
+    # Give the user the option to provide a value of working indentation 
+    # to compute G*.
+    if param_dict.get('wc') is None:
+        wc = app_indentation.max()
+    else:
+        wc = param_dict.get('wc')
+    # Get bcoef
+    bcoef = param_dict['bcoef']
     # Declare empty list to save the results of the different
     # modulation segments of the curve
     results = []
@@ -97,10 +105,10 @@ def doMicrorheologySine(fdc, param_dict):
         G = ComputeComplexModulusSine(
             A_defl, A_ind, wc, dPhi, frequency, param_dict['contact_model'],
             param_dict['tip_param'], param_dict['k'], fi=fi, amp_quotient=amp_quotient,
-            bcoef=param_dict['bcoef'], poisson_ratio=param_dict['poisson']
+            bcoef=bcoef, poisson_ratio=param_dict['poisson']
         )
         # Append results of each segment
-        results.append((frequency, G.real, G.imag, ind_sine_wave, delf_sine_wave))
+        results.append((frequency, G.real, G.imag, ind_sine_wave, delf_sine_wave, fi, amp_quotient))
     # Organize and unpack the results for the different segments
     results = sorted(results, key=lambda x: int(x[0]))
     frequencies_results = [x[0] for x in results]
@@ -108,4 +116,6 @@ def doMicrorheologySine(fdc, param_dict):
     G_loss_results = [x[2] for x in results]
     ind_sinfit_results = [x[3] for x in results]
     defl_sinfit_results = [x[4] for x in results]
-    return (frequencies_results, G_storage_results, G_loss_results, ind_sinfit_results, defl_sinfit_results)
+    fi_results = [x[5] for x in results]
+    amp_quotient_results = [x[6] for x in results]
+    return (frequencies_results, G_storage_results, G_loss_results, ind_sinfit_results, defl_sinfit_results, fi_results, amp_quotient_results, bcoef, wc)
