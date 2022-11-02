@@ -8,7 +8,10 @@ def model_pyramid(G, wc, half_angle, freq, fi, bcoef, poisson_ratio):
     # Equation (5)
     div = 3 * wc * np.tan(np.radians(half_angle))
     coeff = (1.0 - poisson_ratio) / div
-    Piezo_corr = np.exp(-1j * np.radians(fi))
+    if fi < 0:
+        Piezo_corr = np.exp(1j * np.radians(fi))
+    else:
+        Piezo_corr = np.exp(-1j * np.radians(fi))
     G_corr = coeff * 2 * np.pi * 1j * freq * bcoef
     G_complex =  G * Piezo_corr * coeff - G_corr
     return G_complex.real, G_complex.imag
@@ -20,7 +23,10 @@ def model_paraboloid(G, wc, tip_radius, freq, fi, bcoef, poisson_ratio):
     # Equation (18)
     div = 4 * np.sqrt(tip_radius * wc)
     coeff = (1.0 - poisson_ratio) / div
-    Piezo_corr = np.exp(-1j * np.radians(fi))
+    if fi < 0:
+        Piezo_corr = np.exp(1j * np.radians(fi))
+    else:
+        Piezo_corr = np.exp(-1j * np.radians(fi))
     G_corr = coeff * 2 * np.pi * 1j * freq * bcoef
     G_complex =  G * Piezo_corr * coeff - G_corr
     return G_complex.real, G_complex.imag

@@ -64,8 +64,10 @@ def doMicrorheologySine(fdc, param_dict):
                 print(f"The frequency {frequency} was not found in the piezo characterization dataframe")
             else:
                 fi = piezoChar['fi_degrees'].item() # In degrees
-                amp_quotient = piezoChar['amp_quotient'].item()
-                # amp_quotient = 1
+                if param_dict['corr_amp']:
+                    amp_quotient = piezoChar['amp_quotient'].item()
+                else:
+                    amp_quotient = 1
         # Detrend input signals using the rolling average method
         zheight, deflection, time =\
             detrend_rolling_average(frequency, zheight, deflection, time, 'zheight', 'deflection', [])
