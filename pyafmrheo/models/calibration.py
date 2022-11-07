@@ -73,16 +73,22 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
     kB = 1.3807e-2*1e3 #in pNpm/K
     T=273+Tc
     xsqrA1=np.pi*A1**2*fR1/2/Q1
+    print('X2')
+    print(xsqrA1)
     if cantType == 'Rectangular':
         Chi1= 0.8174
     elif cantType == 'V Shape':
         Chi1= 0.764
     kcantiA=Chi1*kB*T/xsqrA1
+    print('K canti A')
+    print(kcantiA)
     if medium == 'air':
         rho, eta = air_properties(Tc, RH)
     elif medium == 'water':
         rho = 1000
         eta = 0.9e-3
+    print('Params for force constant')
+    print(rho, eta, b, L, d, Q1, fR1*2*np.pi, cantType)
     k0 = force_constant(rho, eta, b, L, d, Q1, fR1*2*np.pi, cantType)
     if username != "" and pwd != "" and selectedCantCode != "":
         GCI_cant_springConst=SaderGCI_CalculateK(username, pwd, selectedCantCode, fR1/1e3, Q1)
