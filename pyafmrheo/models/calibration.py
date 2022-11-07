@@ -98,12 +98,42 @@ def force_constant(rho, eta, b, L, d, Q, omega, cantType):
     return 0.1906 * rho * b**2 * L * Q * gamma_imag * omega**2
 
 def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, username="", pwd="", selectedCantCode=""):
+    """
+    Computes the spring constant (k) in N/m and the deflection sensitivity (invOLS) in m/V 
+    of the cantilever using the Sader general method and the Sader GCI method.
+
+            References:
+                    Sader 1
+                    Sader 2
+                    Higgins
+                    Fidane
+                    GCI 
+
+            Parameters:
+                    b (float): in m
+                    L (str): in m
+                    d (float): in m
+                    A1 (float): in m^2/Hz
+                    fR1 (float): in Hz
+                    Q1 (float): No units
+                    Tc (float): in celcius
+                    RH (float): in %
+                    medium (float): air or water
+                    cantType (float): Rectangular or V Shaped
+                    username (float): Username
+                    pwd (float): Password
+                    selectedCantCode (float): Valid cantilever code
+            
+            Returns:
+                    k0
+                    GCI_cant_springConst
+                    involsValue
+                    invOLS_H
+    """
     # Reference invOLS
-    invOLS= 20*1e3 #in pm/V
-    kB = 1.3807e-2*1e3 #in pNpm/K
-    T=273+Tc
-    A1 = A1 * 1e24 # m^2/V --> pm^2/V
-    print(fR1)
+    invOLS= 20*1e-9 #in m/V
+    kB = BoltzmannConst # in J⋅K−1
+    T=C_to_kelvin(Tc) #in K
     xsqrA1=np.pi*A1**2*fR1/2/Q1
     print('X2')
     print(xsqrA1)
