@@ -131,9 +131,9 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
                     invOLS_H
     """
     # Reference invOLS
-    invOLS= 20*1e-9 #in m/V
+    invOLS= 20*1e-9 # in m/V
     kB = BoltzmannConst # in J⋅K−1
-    T=C_to_kelvin(Tc) #in K
+    T=C_to_kelvin(Tc) # in K
     xsqrA1=np.pi*A1**2*fR1/2/Q1
     print('X2')
     print(xsqrA1)
@@ -156,7 +156,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
         GCI_cant_springConst=SaderGCI_CalculateK(username, pwd, selectedCantCode, fR1/1e3, Q1)
     else:
         GCI_cant_springConst=np.NaN
-    involsValue=invOLS*np.sqrt(kcantiA/k0)/1e3 
-    invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*(A1)**2/Q1*fR1))*invOLS/1e3*np.sqrt(Chi1)
+    involsValue=invOLS*np.sqrt(kcantiA/k0) 
+    invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*(A1)**2/Q1*fR1))*invOLS*np.sqrt(Chi1)
 
     return k0, GCI_cant_springConst, involsValue, invOLS_H
