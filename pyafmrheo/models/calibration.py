@@ -156,7 +156,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
         GCI_cant_springConst=SaderGCI_CalculateK(username, pwd, selectedCantCode, fR1/1e3, Q1)
     else:
         GCI_cant_springConst=np.NaN
-    involsValue=invOLS*np.sqrt(kcantiA/k0)/1e9
-    invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*(A1)**2/Q1*fR1))*invOLS/1e9*np.sqrt(Chi1)
+    involsValue=invOLS*np.sqrt(kcantiA/k0)/1e3 
+    invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*(A1)**2/Q1*fR1))*invOLS/1e3*np.sqrt(Chi1)
 
     return k0, GCI_cant_springConst, involsValue, invOLS_H
