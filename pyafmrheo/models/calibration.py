@@ -5,6 +5,35 @@ from .sader import SaderGCI_CalculateK
 
 BoltzmannConst = 1.380649e-23 # J⋅K−1
 
+def qsat(Ta,Pa=None):
+    P_default = 1020     # default air pressure for Kinneret [mbars]
+    if not Pa:
+        Pa=P_default # pressure in mb
+    ew = 6.1121*(1.0007+3.46e-6*Pa)*np.exp((17.502*Ta)/(240.97+Ta)) # in mb
+    return 0.62197*(ew/(Pa-0.378*ew));                         # mb -> kg/kg
+
+def air_dens(Ta, RH, Pa=None):
+    eps_air = 0.62197    # molecular weight ratio (water/air)
+    P_default = 1020     # default air pressure for Kinneret [mbars]
+    CtoK = 273.16        # conversion factor for [C] to [K]
+    gas_const_R = 287.04 # gas constant for dry air [J/kg/K]
+    if not Pa:
+        Pa = P_default
+    o61 = 1/eps_air-1                 # 0.61 (moisture correction for temp.)
+    Q = (0.01*RH)*qsat(Ta,Pa)     # specific humidity of air [kg/kg]
+    T = Ta+CtoK                     # convert to K
+    Tv = T*(1 + o61*Q)              # air virtual temperature
+    return (100*Pa)/(gas_const_R*Tv);  # air density [kg/m^3]
+
+def viscair(Ta):
+    return 1.326e-5*(1 + 6.542e-3*Ta + 8.301e-6*Ta**2 - 4.84e-9*Ta**3)
+
+def air_properties(T,RH):
+    rho = air_dens(T,RH)
+    eta = viscair(T)
+    eta = eta*rho
+    return rho, eta
+
 def C_to_kelvin(C):
     # T (K) = T (°C) + 273.15
     return C + 273.15
@@ -69,10 +98,12 @@ def force_constant(rho, eta, b, L, d, Q, omega, cantType):
     return 0.1906 * rho * b**2 * L * Q * gamma_imag * omega**2
 
 def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, username="", pwd="", selectedCantCode=""):
+    # Reference invOLS
     invOLS= 20*1e3 #in pm/V
     kB = 1.3807e-2*1e3 #in pNpm/K
     T=273+Tc
     A1 = A1 * 1e24 # m^2/V --> pm^2/V
+    print(fR1)
     xsqrA1=np.pi*A1**2*fR1/2/Q1
     print('X2')
     print(xsqrA1)
@@ -99,32 +130,3 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
     invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*(A1)**2/Q1*fR1))*invOLS/1e3*np.sqrt(Chi1)
 
     return k0, GCI_cant_springConst, involsValue, invOLS_H
-
-def qsat(Ta,Pa=None):
-    P_default = 1020     # default air pressure for Kinneret [mbars]
-    if not Pa:
-        Pa=P_default # pressure in mb
-    ew = 6.1121*(1.0007+3.46e-6*Pa)*np.exp((17.502*Ta)/(240.97+Ta)) # in mb
-    return 0.62197*(ew/(Pa-0.378*ew));                         # mb -> kg/kg
-
-def air_dens(Ta, RH, Pa=None):
-    eps_air = 0.62197    # molecular weight ratio (water/air)
-    P_default = 1020     # default air pressure for Kinneret [mbars]
-    CtoK = 273.16        # conversion factor for [C] to [K]
-    gas_const_R = 287.04 # gas constant for dry air [J/kg/K]
-    if not Pa:
-        Pa = P_default
-    o61 = 1/eps_air-1                 # 0.61 (moisture correction for temp.)
-    Q = (0.01*RH)*qsat(Ta,Pa)     # specific humidity of air [kg/kg]
-    T = Ta+CtoK                     # convert to K
-    Tv = T*(1 + o61*Q)              # air virtual temperature
-    return (100*Pa)/(gas_const_R*Tv);  # air density [kg/m^3]
-
-def viscair(Ta):
-    return 1.326e-5*(1 + 6.542e-3*Ta + 8.301e-6*Ta**2 - 4.84e-9*Ta**3)
-
-def air_properties(T,RH):
-    rho = air_dens(T,RH)
-    eta = viscair(T)
-    eta = eta*rho
-    return rho, eta
