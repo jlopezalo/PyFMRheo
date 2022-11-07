@@ -1,3 +1,4 @@
+# coding: utf-8
 import numpy as np
 from scipy.special import kv
 
@@ -6,18 +7,18 @@ from .sader import SaderGCI_CalculateK
 BoltzmannConst = 1.380649e-23 # J⋅K−1
 
 def qsat(Ta,Pa=None):
-    P_default = 1020     # default air pressure for Kinneret [mbars]
     if not Pa:
+        P_default = 1020     # default air pressure for Kinneret [mbars]
         Pa=P_default # pressure in mb
     ew = 6.1121*(1.0007+3.46e-6*Pa)*np.exp((17.502*Ta)/(240.97+Ta)) # in mb
-    return 0.62197*(ew/(Pa-0.378*ew));                         # mb -> kg/kg
+    return 0.62197*(ew/(Pa-0.378*ew)) # mb -> kg/kg
 
 def air_dens(Ta, RH, Pa=None):
     eps_air = 0.62197    # molecular weight ratio (water/air)
-    P_default = 1020     # default air pressure for Kinneret [mbars]
     CtoK = 273.16        # conversion factor for [C] to [K]
     gas_const_R = 287.04 # gas constant for dry air [J/kg/K]
     if not Pa:
+        P_default = 1020     # default air pressure for Kinneret [mbars]
         Pa = P_default
     o61 = 1/eps_air-1                 # 0.61 (moisture correction for temp.)
     Q = (0.01*RH)*qsat(Ta,Pa)     # specific humidity of air [kg/kg]
@@ -160,3 +161,17 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
     invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*(A1)**2/Q1*fR1))*invOLS/1e3*np.sqrt(Chi1)
 
     return k0, GCI_cant_springConst, involsValue, invOLS_H
+
+def test_k_calibration():
+    # http://dx.doi.org/10.1063/1.1150021
+    # http://experimentationlab.berkeley.edu/sites/default/files/AFMImages/Sader.pdf
+    # force_constant(rho, eta, b, L, d, Q, omega
+    print(force_constant(1.18, 1.86e-5, 29e-6, 397e-6, 0, 55.5, 17.36*10**3*2*3.1415, 'Rectangular'))
+    print(force_constant(1.18, 1.86e-5, 29e-6, 197e-6, 0, 136.0, 69.87*10**3*2*3.1415, 'Rectangular'))
+    print(force_constant(1.18, 1.86e-5, 29e-6,  97e-6, 0, 309.0, 278.7*10**3*2*3.1415, 'Rectangular'))
+
+    print(force_constant(1.18, 1.86e-5, 20e-6, 203e-6, 0, 17.6, 10.31*10**3*2*3.1415, 'Rectangular'))
+    print(force_constant(1.18, 1.86e-5, 20e-6, 160e-6, 0, 22.7, 15.61*10**3*2*3.1415, 'Rectangular'))
+    print(force_constant(1.18, 1.86e-5, 20e-6, 128e-6, 0, 30.9, 24.03*10**3*2*3.1415, 'Rectangular'))
+    print(force_constant(1.18, 1.86e-5, 20e-6, 105e-6, 0, 41.7, 36.85*10**3*2*3.1415, 'Rectangular'))
+    print(force_constant(1.18, 1.86e-5, 20e-6,  77e-6, 0, 60.3, 64.26*10**3*2*3.1415, 'Rectangular'))
