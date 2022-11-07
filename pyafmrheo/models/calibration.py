@@ -72,6 +72,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
     invOLS= 20*1e3 #in pm/V
     kB = 1.3807e-2*1e3 #in pNpm/K
     T=273+Tc
+    A1 = A1 * 1e24 # m^2/V --> pm^2/V
     xsqrA1=np.pi*A1**2*fR1/2/Q1
     print('X2')
     print(xsqrA1)
