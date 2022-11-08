@@ -98,39 +98,42 @@ def force_constant(rho, eta, b, L, d, Q, omega, cantType):
     gamma_imag = np.imag(gamma_rect(Re))
     return 0.1906 * rho * b**2 * L * Q * gamma_imag * omega**2
 
-def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, CorrFact=None, Chi=None, beta=None, username="", pwd="", selectedCantCode=""):
+def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, CorrFact=None, beta=None, Chi=None, username="", pwd="", selectedCantCode=""):
     """
     Computes the spring constant (k) in N/m and the deflection sensitivity (invOLS) in m/V 
     of the cantilever using the Sader general method and the Sader GCI method.
 
-            References:
-                    Sader 1
-                    Sader 2
-                    Higgins
-                    Fidane
-                    GCI 
-
             Parameters:
-                    b (float): in m
-                    L (str): in m
-                    d (float): in m
+                    b (float): Width of the cantilever in m
+                    L (str): Lenght of the cantilever in m
+                    d (float): Width cantilever legs in m
                     A1 (float): in m^2/Hz
-                    fR1 (float): in Hz
-                    Q1 (float): No units
-                    Tc (float): in celcius
-                    RH (float): in %
+                    fR1 (float): Resonance frequency of the cantilever in Hz
+                    Q1 (float): Quality factor of the cantilever
+                    Tc (float): Medium temperature in celcius
+                    RH (float): Relative humidity of the medium (0-100%)
                     medium (float): air or water
                     cantType (float): Rectangular or V Shaped
-                    Chi (float): Correction factor
-                    username (float): Username
-                    pwd (float): Password
-                    selectedCantCode (float): Valid cantilever code
+                    CorrFact (float): Correction factor to use (CorrFact = beta / Chi^2) (optional)
+                    beta (float): Beta to compute correction factor (beta = k / k1) (optional)
+                    Chi (float): Chi to compute correction factor (Chi = InvOLSfree / InvOLS) (optional)
+                    username (float): Username for GCI web app (optional)
+                    pwd (float): Password for GCI web app (optional)
+                    selectedCantCode (float): Valid cantilever code for GCI web app (optional)
             
             Returns:
-                    k0
-                    GCI_cant_springConst
-                    involsValue
-                    invOLS_H
+                    k0 (float): General Sader method spring constant
+                    k_GCI (float): Spring constant from GCI (only if username, password and cantilever code are given)
+                    invOLS_SHO (float): SHO invOLS
+                    invOLS_H (float): Higgins invOLS
+            
+             References:
+                    Stark et al. (2001) https://doi.org/10.1016/S0304-3991(00)00077-2  
+                    Sader et al. (2005) https://doi.org/10.1063/1.1935133
+                    Higgins (2006) https://doi.org/10.1063/1.2162455
+                    Pirzer & Hugel (2009) https://doi.org/10.1063/1.3100258
+                    Sader et al. (2016) https://doi.org/10.1063/1.4962866 
+                    Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     """
     
     # Constants
@@ -168,19 +171,21 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     omegaR1 = fR1*2*np.pi
     k0 = force_constant(rho, eta, b, L, d, Q1, omegaR1, cantType)
 
+    k0 = 0.098
+
     # Get deflection sensitivity using SHO:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
     kcantiA=CorrFact*kB*T/xsqrA1
-    involsValue=kcantiA/k0
+    invOLS_SHO=kcantiA/k0
     # Scale value
-    involsValue = invOLSscaling * involsValue
+    invOLS_SHO = invOLSscaling * invOLS_SHO
 
     # Get deflection sensitivity using Higgins:
     # Higgins (2006) https://doi.org/10.1063/1.2162455
     # InvOLS = sqrt((2 * Kb * T) / (pi * k1 * fR1 * A1 * Q1))
     invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*A1**2/Q1*fR1))*np.sqrt(CorrFact)
-    # Scale value
+    # Scale invOLS_H value
     invOLS_H = invOLSscaling * invOLS_H
 
     # Call to the GCI API:
@@ -189,11 +194,13 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # GCI Ref.: https://doi.org/10.1063/1.4757398
     # GCI Webtool ref: https://doi.org/10.1063/1.4962866 
     if username != "" and pwd != "" and selectedCantCode != "":
-        GCI_cant_springConst=SaderGCI_CalculateK(username, pwd, selectedCantCode, fR1/1e3, Q1)
+        fR1_khz = fR1/1e3 # Hz --> kHz
+        k_GCI=SaderGCI_CalculateK(username, pwd, selectedCantCode, fR1_khz, Q1)
     else:
-        GCI_cant_springConst=np.NaN
+        k_GCI=np.NaN
     
-    return k0, GCI_cant_springConst, involsValue, invOLS_H
+    # Return results
+    return k0, k_GCI, invOLS_SHO, invOLS_H
 
 def test_k_calibration():
     # http://dx.doi.org/10.1063/1.1150021
