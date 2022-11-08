@@ -137,9 +137,9 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     """
     
     # Constants
-    invOLSscaling= 1e-8 # in m/V
+    invOLSscaling = 1 # in m/V
     kB = BoltzmannConst # in J⋅K−1
-    T=C_to_kelvin(Tc) # in K
+    T = C_to_kelvin(Tc) # in K
     
     # Compute analytically <x^2> using SHO
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
@@ -151,13 +151,13 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # References:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     if Chi is not None and beta is not None:
-        CorrFact = beta/Chi**2
+        CorrFact = beta / Chi**2
 
     # Default Chi values from:
     # Pirzer & Hugel (2009) https://doi.org/10.1063/1.3100258
     # Stark et al. (2001) https://doi.org/10.1016/S0304-3991(00)00077-2  
-    if cantType == 'Rectangular' and CorrFact is None: CorrFact= 0.8174
-    elif cantType == 'V Shape' and CorrFact is None: CorrFact: CorrFact= 0.764
+    if cantType == 'Rectangular' and CorrFact is None: CorrFact = 0.8174
+    elif cantType == 'V Shape' and CorrFact is None: CorrFact: CorrFact = 0.764
 
     # Get properties of the medium
     if medium == 'air':
@@ -168,7 +168,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     
     # Get spring constant using general Sader method:
     # Sader et al. (2005) https://doi.org/10.1063/1.1935133
-    omegaR1 = fR1*2*np.pi
+    omegaR1 = fR1 * 2 * np.pi
     k0 = force_constant(rho, eta, b, L, d, Q1, omegaR1, cantType)
 
     k0 = 0.098
@@ -176,15 +176,15 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # Get deflection sensitivity using SHO:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
-    kcantiA=CorrFact*kB*T/xsqrA1
-    invOLS_SHO=kcantiA/k0
+    kcantiA = CorrFact * kB * T / xsqrA1
+    invOLS_SHO = kcantiA / k0
     # Scale value
     invOLS_SHO = invOLSscaling * invOLS_SHO
 
     # Get deflection sensitivity using Higgins:
     # Higgins (2006) https://doi.org/10.1063/1.2162455
     # InvOLS = sqrt((2 * Kb * T) / (pi * k1 * fR1 * A1 * Q1))
-    invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*A1**2/Q1*fR1))*np.sqrt(CorrFact)
+    invOLS_H = np.sqrt(2 * kB * T / (np.pi * k0 * A1**2 / Q1 * fR1)) * np.sqrt(CorrFact)
     # Scale invOLS_H value
     invOLS_H = invOLSscaling * invOLS_H
 
@@ -194,7 +194,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # GCI Ref.: https://doi.org/10.1063/1.4757398
     # GCI Webtool ref: https://doi.org/10.1063/1.4962866 
     if username != "" and pwd != "" and selectedCantCode != "":
-        fR1_khz = fR1/1e3 # Hz --> kHz
+        fR1_khz = fR1 * 1e-3 # Hz --> kHz
         k_GCI=SaderGCI_CalculateK(username, pwd, selectedCantCode, fR1_khz, Q1)
     else:
         k_GCI=np.NaN
