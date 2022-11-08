@@ -138,7 +138,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     
     # Constants
     invOLSscaling = 1 # in m/V
-    kB = BoltzmannConst # in J⋅K−1
+    kB = 1.380649e-2 # in m2 kg s-2 K-1
     T = C_to_kelvin(Tc) # in K
 
     # Compute correction factor using:
@@ -170,7 +170,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # Get deflection sensitivity using SHO:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
-    xsqrA1=np.pi * A1**2 * fR1 / 2 / Q1
+    xsqrA1 = np.pi * A1**2 * fR1 / 2 / Q1
     print('xsqrA1')
     print(xsqrA1)
     kcantiA = CorrFact * kB * T / xsqrA1
