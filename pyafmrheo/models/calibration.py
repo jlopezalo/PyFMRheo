@@ -98,7 +98,11 @@ def force_constant(rho, eta, b, L, d, Q, omega, cantType):
     gamma_imag = np.imag(gamma_rect(Re))
     return 0.1906 * rho * b**2 * L * Q * gamma_imag * omega**2
 
-def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, CorrFact=None, beta=None, Chi=None, invOLSscaling=None, username="", pwd="", selectedCantCode=""):
+def Stark_Chi_force_constant(
+    b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, k0=None,
+    CorrFact=None, beta=None, Chi=None, invOLSscaling=None,
+    username="", pwd="", selectedCantCode=""
+):
     """
     Computes the spring constant (k) in N/m and the deflection sensitivity (invOLS) in m/V 
     of the cantilever using the Sader general method and the Sader GCI method.
@@ -114,6 +118,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
                     RH (float): Relative humidity of the medium (0-100%)
                     medium (float): air or water
                     cantType (float): Rectangular or V Shaped
+                    k0 (float): Spring constant to use in N/m
                     CorrFact (float): Correction factor to use (CorrFact = beta / Chi^2) (optional)
                     beta (float): Beta to compute correction factor (beta = k / k1) (optional)
                     Chi (float): Chi to compute correction factor (Chi = InvOLSfree / InvOLS) (optional)
@@ -139,6 +144,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # Constants
     kB = 1.380649e-23 # in Nm/K
     T = C_to_kelvin(Tc) # in K
+    omegaR1 = fR1 * 2 * np.pi # Hz --> Rad/s
 
     # Compute correction factor using:
     # beta = k / k1
@@ -163,27 +169,22 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     
     # Get spring constant using general Sader method:
     # Sader et al. (2005) https://doi.org/10.1063/1.1935133
-    omegaR1 = fR1 * 2 * np.pi
-    k0 = force_constant(rho, eta, b, L, d, Q1, omegaR1, cantType)
+    if k0 is None:
+        k0 = force_constant(rho, eta, b, L, d, Q1, omegaR1, cantType)
 
     # Get deflection sensitivity using SHO:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
-    xsqrA1 = np.pi * A1**2 * fR1 / 2 / Q1
-    print('xsqrA1')
-    print(xsqrA1)
+    xsqrA1 = np.pi * A1**2 * omegaR1 / 2 / Q1
     kcantiA = CorrFact * kB * T / xsqrA1
-    print('kcantiA')
-    print(kcantiA)
     invOLS_SHO = kcantiA / k0
-    print('invOLS_SHO')
-    print(invOLS_SHO)
 
     # Get deflection sensitivity using Higgins:
     # Higgins (2006) https://doi.org/10.1063/1.2162455
     # InvOLS = sqrt((2 * Kb * T) / (pi * k1 * fR1 * A1 * Q1))
     invOLS_H = np.sqrt(2 * kB * T / (np.pi * k0 * A1**2 / Q1 * fR1)) * np.sqrt(CorrFact)
 
+    # Scale the invOLS results by the sensitivity used when loading the thermal
     if invOLSscaling is not None:
         invOLS_SHO *= invOLSscaling
         invOLS_H *= invOLSscaling
