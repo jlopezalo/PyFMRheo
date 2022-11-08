@@ -98,7 +98,7 @@ def force_constant(rho, eta, b, L, d, Q, omega, cantType):
     gamma_imag = np.imag(gamma_rect(Re))
     return 0.1906 * rho * b**2 * L * Q * gamma_imag * omega**2
 
-def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, CorrFact=None, beta=None, Chi=None, username="", pwd="", selectedCantCode=""):
+def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, CorrFact=None, beta=None, Chi=None, invOLSscaling=None, username="", pwd="", selectedCantCode=""):
     """
     Computes the spring constant (k) in N/m and the deflection sensitivity (invOLS) in m/V 
     of the cantilever using the Sader general method and the Sader GCI method.
@@ -183,6 +183,10 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # Higgins (2006) https://doi.org/10.1063/1.2162455
     # InvOLS = sqrt((2 * Kb * T) / (pi * k1 * fR1 * A1 * Q1))
     invOLS_H = np.sqrt(2 * kB * T / (np.pi * k0 * A1**2 / Q1 * fR1)) * np.sqrt(CorrFact)
+
+    if invOLSscaling is not None:
+        invOLS_SHO *= invOLSscaling
+        invOLS_H *= invOLSscaling
 
     # Call to the GCI API:
     # GCI Webapp: https://www.sadermethod.org/
