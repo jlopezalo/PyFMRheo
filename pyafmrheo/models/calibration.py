@@ -174,7 +174,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # Get deflection sensitivity using Higgins:
     # Higgins (2006) https://doi.org/10.1063/1.2162455
     # InvOLS = sqrt((2 * Kb * T) / (pi * k1 * fR1 * A1 * Q1))
-    invOLS_H = np.sqrt((2 * kB * T) / (np.pi * k0 * fR1 * A1**2 * Q1)) * np.sqrt(CorrFact)
+    invOLS_H = np.sqrt((2 * kB * T) / (np.pi * k0 * A1**2 / fR1 * Q1)) * np.sqrt(CorrFact)
 
     # Call to the GCI API:
     # GCI Webapp: https://www.sadermethod.org/
