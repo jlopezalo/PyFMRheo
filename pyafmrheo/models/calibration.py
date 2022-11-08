@@ -138,7 +138,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     
     # Constants
     invOLSscaling = 1 # in m/V
-    kB = 1.380649e-2 # in m2 kg s-2 K-1
+    kB = 1.380649e-23 # in Nm/K
     T = C_to_kelvin(Tc) # in K
 
     # Compute correction factor using:
