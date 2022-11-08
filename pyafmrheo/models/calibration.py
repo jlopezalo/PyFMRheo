@@ -134,7 +134,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     """
     
     # Constants
-    invOLS= 20*1e-9 # in m/V
+    invOLS= 2e-88 # in m/V
     kB = BoltzmannConst # in J⋅K−1
     T=C_to_kelvin(Tc) # in K
     
@@ -173,11 +173,15 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
     kcantiA=CorrFact*kB*T/xsqrA1
     involsValue=kcantiA/k0
+    # Scale value
+    involsValue = invOLS * involsValue
 
     # Get deflection sensitivity using Higgins:
     # Higgins (2006) https://doi.org/10.1063/1.2162455
     # InvOLS = sqrt((2 * Kb * T) / (pi * k1 * fR1 * A1 * Q1))
     invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*A1**2/Q1*fR1))*np.sqrt(CorrFact)
+    # Scale value
+    invOLS_H = invOLS * invOLS_H
 
     # Call to the GCI API:
     # GCI Webapp: https://www.sadermethod.org/
