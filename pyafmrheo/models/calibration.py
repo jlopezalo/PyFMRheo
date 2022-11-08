@@ -171,8 +171,6 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     omegaR1 = fR1 * 2 * np.pi
     k0 = force_constant(rho, eta, b, L, d, Q1, omegaR1, cantType)
 
-    k0 = 0.098
-
     # Get deflection sensitivity using SHO:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
