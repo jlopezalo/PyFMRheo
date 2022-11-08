@@ -98,7 +98,7 @@ def force_constant(rho, eta, b, L, d, Q, omega, cantType):
     gamma_imag = np.imag(gamma_rect(Re))
     return 0.1906 * rho * b**2 * L * Q * gamma_imag * omega**2
 
-def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, username="", pwd="", selectedCantCode=""):
+def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, CorrFact=None, Chi=None, beta=None, username="", pwd="", selectedCantCode=""):
     """
     Computes the spring constant (k) in N/m and the deflection sensitivity (invOLS) in m/V 
     of the cantilever using the Sader general method and the Sader GCI method.
@@ -121,6 +121,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
                     RH (float): in %
                     medium (float): air or water
                     cantType (float): Rectangular or V Shaped
+                    Chi (float): Correction factor
                     username (float): Username
                     pwd (float): Password
                     selectedCantCode (float): Valid cantilever code
@@ -131,35 +132,63 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, use
                     involsValue
                     invOLS_H
     """
-    # Reference invOLS
+    
+    # Constants
     invOLS= 20*1e-9 # in m/V
     kB = BoltzmannConst # in J⋅K−1
     T=C_to_kelvin(Tc) # in K
+    
+    # Compute analytically <x^2> using SHO
+    # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     xsqrA1=np.pi*A1**2*fR1/2/Q1
-    print('X2')
-    print(xsqrA1)
-    if cantType == 'Rectangular':
-        Chi1= 0.8174
-    elif cantType == 'V Shape':
-        Chi1= 0.764
-    kcantiA=Chi1*kB*T/xsqrA1
-    print('K canti A')
-    print(kcantiA)
+
+    # Compute correction factor using:
+    # beta = k / k1
+    # Chi = InvOLSfree / InvOLS
+    # References:
+    # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
+    if Chi is not None and beta is not None:
+        CorrFact = beta/Chi**2
+
+    # Default Chi values from:
+    # Pirzer & Hugel (2009) https://doi.org/10.1063/1.3100258
+    # Stark et al. (2001) https://doi.org/10.1016/S0304-3991(00)00077-2  
+    if cantType == 'Rectangular' and CorrFact is None: CorrFact= 0.8174
+    elif cantType == 'V Shape' and CorrFact is None: CorrFact: CorrFact= 0.764
+
+    # Get properties of the medium
     if medium == 'air':
         rho, eta = air_properties(Tc, RH)
     elif medium == 'water':
         rho = 1000
         eta = 0.9e-3
-    print('Params for force constant')
-    print(rho, eta, b, L, d, Q1, fR1*2*np.pi, cantType)
-    k0 = force_constant(rho, eta, b, L, d, Q1, fR1*2*np.pi, cantType)
+    
+    # Get spring constant using general Sader method:
+    # Sader et al. (2005) https://doi.org/10.1063/1.1935133
+    omegaR1 = fR1*2*np.pi
+    k0 = force_constant(rho, eta, b, L, d, Q1, omegaR1, cantType)
+
+    # Get deflection sensitivity using SHO:
+    # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
+    # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
+    kcantiA=CorrFact*kB*T/xsqrA1
+    involsValue=kcantiA/k0
+
+    # Get deflection sensitivity using Higgins:
+    # Higgins (2006) https://doi.org/10.1063/1.2162455
+    # InvOLS = sqrt((2 * Kb * T) / (pi * k1 * fR1 * A1 * Q1))
+    invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*A1**2/Q1*fR1))*np.sqrt(CorrFact)
+
+    # Call to the GCI API:
+    # GCI Webapp: https://www.sadermethod.org/
+    # GCI API code: https://github.com/SaderMethod/API/tree/master/1_1/Python
+    # GCI Ref.: https://doi.org/10.1063/1.4757398
+    # GCI Webtool ref: https://doi.org/10.1063/1.4962866 
     if username != "" and pwd != "" and selectedCantCode != "":
         GCI_cant_springConst=SaderGCI_CalculateK(username, pwd, selectedCantCode, fR1/1e3, Q1)
     else:
         GCI_cant_springConst=np.NaN
-    involsValue=invOLS*np.sqrt(kcantiA/k0) 
-    invOLS_H=np.sqrt(2*kB*T/(np.pi*k0*(A1)**2/Q1*fR1))*invOLS*np.sqrt(Chi1)
-
+    
     return k0, GCI_cant_springConst, involsValue, invOLS_H
 
 def test_k_calibration():
