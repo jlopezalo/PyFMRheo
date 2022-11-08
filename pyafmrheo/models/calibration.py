@@ -169,21 +169,12 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     # Get deflection sensitivity using SHO:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
-    xsqrA1 = np.pi * A1**2 * fR1 / 2 / Q1
-    print('xsqrA1')
-    print(xsqrA1)
-    kcantiA = CorrFact * kB * T / xsqrA1
-    print('kcantiA')
-    print(kcantiA)
-    invOLS_SHO = kcantiA / k0
-    invOLS_SHO = np.sqrt(CorrFact * (kB * T * 2 * Q1) / (k0 * np.pi * A1**2 * fR1))
-    print('invOLS_SHO')
-    print(invOLS_SHO)
+    invOLS_SHO = np.sqrt((kB * T * 2 * Q1) / (k0 * np.pi * A1**2 * fR1)) * np.sqrt(CorrFact)
 
     # Get deflection sensitivity using Higgins:
     # Higgins (2006) https://doi.org/10.1063/1.2162455
     # InvOLS = sqrt((2 * Kb * T) / (pi * k1 * fR1 * A1 * Q1))
-    invOLS_H = np.sqrt(2 * kB * T / (np.pi * k0 * A1**2 / Q1 * fR1)) * np.sqrt(CorrFact)
+    invOLS_H = np.sqrt((2 * kB * T) / (np.pi * k0 * fR1 * A1**2 * Q1)) * np.sqrt(CorrFact)
 
     # Call to the GCI API:
     # GCI Webapp: https://www.sadermethod.org/
