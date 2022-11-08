@@ -137,7 +137,6 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     """
     
     # Constants
-    invOLSscaling = 1 # in m/V
     kB = 1.380649e-23 # in Nm/K
     T = C_to_kelvin(Tc) # in K
 
@@ -177,6 +176,7 @@ def Stark_Chi_force_constant(b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, Cor
     print('kcantiA')
     print(kcantiA)
     invOLS_SHO = kcantiA / k0
+    invOLS_SHO = np.sqrt(CorrFact * (kB * T * 2 * Q1) / (k0 * np.pi * A1**2 * fR1))
     print('invOLS_SHO')
     print(invOLS_SHO)
 
