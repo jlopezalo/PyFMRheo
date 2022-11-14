@@ -101,7 +101,7 @@ def force_constant(rho, eta, b, L, d, Q, omega, cantType):
 def Stark_Chi_force_constant(
     b, L, d, A1, fR1, Q1, Tc, RH, medium, cantType, k0=None,
     CorrFact=None, beta=None, Chi=None, invOLSscaling=None,
-    username="", pwd="", selectedCantCode=""
+    username="", password="", selectedCantCode=""
 ):
     """
     Computes the spring constant (k) in N/m and the deflection sensitivity (invOLS) in m/V 
@@ -123,7 +123,7 @@ def Stark_Chi_force_constant(
                     beta (float): Beta to compute correction factor (beta = k / k1) (optional)
                     Chi (float): Chi to compute correction factor (Chi = InvOLSfree / InvOLS) (optional)
                     username (float): Username for GCI web app (optional)
-                    pwd (float): Password for GCI web app (optional)
+                    password (float): Password for GCI web app (optional)
                     selectedCantCode (float): Valid cantilever code for GCI web app (optional)
             
             Returns:
@@ -175,7 +175,7 @@ def Stark_Chi_force_constant(
     # Get deflection sensitivity using SHO:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     # InvOLSliq = sqrt((beta * kb * T * 2Q1) / (Chi^2 * k1 * pi * A1^2 * fR1))
-    invOLS_SHO = np.sqrt(CorrFact * (kB * T * 2*Q1) / (k0 * np.pi * A1**2 * fR1))
+    invOLS_SHO = np.sqrt(CorrFact * (kB * T * 2 * Q1) / (k0 * np.pi * A1**2 * fR1))
 
     # Get deflection sensitivity using Higgins:
     # Higgins (2006) https://doi.org/10.1063/1.2162455
@@ -192,9 +192,9 @@ def Stark_Chi_force_constant(
     # GCI API code: https://github.com/SaderMethod/API/tree/master/1_1/Python
     # GCI Ref.: https://doi.org/10.1063/1.4757398
     # GCI Webtool ref: https://doi.org/10.1063/1.4962866 
-    if username != "" and pwd != "" and selectedCantCode != "":
+    if medium == "air" and username != "" and password != "" and selectedCantCode != "":
         fR1_khz = fR1 * 1e-3 # Hz --> kHz
-        k_GCI=SaderGCI_CalculateK(username, pwd, selectedCantCode, fR1_khz, Q1)
+        k_GCI=SaderGCI_CalculateK(username, password, selectedCantCode, fR1_khz, Q1)
     else:
         k_GCI=np.NaN
     
