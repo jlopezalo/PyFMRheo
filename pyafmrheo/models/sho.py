@@ -112,14 +112,11 @@ class SHOModel:
     def fit_report(self):
         print(f"""
         # Fit parameters
-        Indenter shape: {self.ind_geom}\n
-        Tip paraneter: {self.tip_parameter}\n
-        BEC Model: {self.bec_model}\n
         Number of free parameters: {self.n_params}\n
-        delta0: {self.delta0}\n
-        E0: {self.E0}\n
-        f0: {self.f0}\n
-        slope: {self.slope}\n
+        Awhite: {self.Awhite}\n
+        A: {self.A}\n
+        fR: {self.fR}\n
+        Q: {self.Q}\n
         # Fit metrics
         MAE: {self.MAE}\n
         MSE: {self.MSE}\n
