@@ -11,6 +11,12 @@ def doHertzFit(fdc, param_dict):
         segment_data = fdc.retract_segments[-1][1]
         segment_data.zheight = segment_data.zheight[::-1]
         segment_data.vdeflection = segment_data.vdeflection[::-1]
+    # Downsample signal
+    if param_dict['downsample_flag']:
+        downfactor= len(segment_data.zheight) // param_dict['pts_downsample']
+        idxDown = list(range(0, len(segment_data.zheight), downfactor))
+        segment_data.zheight = segment_data.zheight[idxDown]
+        segment_data.vdeflection = segment_data.vdeflection[idxDown]
     # Get initial estimate of PoC
     rov_PoC = get_poc_RoV_method(
         segment_data.zheight, segment_data.vdeflection, param_dict['poc_win'])
