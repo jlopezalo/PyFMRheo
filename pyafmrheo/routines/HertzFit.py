@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..utils.force_curves import get_poc_RoV_method, get_poc_regulaFalsi_method, correct_tilt
+from ..utils.force_curves import get_poc_RoV_method, get_poc_regulaFalsi_method, correct_tilt, correct_offset
 from ..models.hertz import HertzModel
 
 def doHertzFit(fdc, param_dict):
@@ -11,12 +11,25 @@ def doHertzFit(fdc, param_dict):
         segment_data = fdc.retract_segments[-1][1]
         segment_data.zheight = segment_data.zheight[::-1]
         segment_data.vdeflection = segment_data.vdeflection[::-1]
-    # Downsample signal
-    if param_dict['downsample_flag']:
-        downfactor= len(segment_data.zheight) // param_dict['pts_downsample']
-        idxDown = list(range(0, len(segment_data.zheight), downfactor))
-        segment_data.zheight = segment_data.zheight[idxDown]
-        segment_data.vdeflection = segment_data.vdeflection[idxDown]
+    # Perform tilt correction
+    if param_dict['offset_type'] == 'percentage':
+        deltaz = segment_data.zheight.max() - segment_data.zheight.min()
+        maxoffset = segment_data.zheight.min() + deltaz*param_dict['tilt_max_offset']
+        minoffset = segment_data.zheight.min() + deltaz*param_dict['tilt_min_offset']
+    else:
+        maxoffset = param_dict['tilt_max_offset']
+        minoffset = param_dict['tilt_min_offset']
+        
+    if param_dict['correct_tilt']:
+        segment_data.vdeflection =\
+            correct_tilt(
+                segment_data.zheight, segment_data.vdeflection, maxoffset, minoffset
+            )
+    else:
+        segment_data.vdeflection =\
+            correct_offset(
+                segment_data.zheight, segment_data.vdeflection, maxoffset, minoffset
+            )
     # Get initial estimate of PoC
     if param_dict['poc_method'] == 'RoV':
         comp_PoC = get_poc_RoV_method(
@@ -25,13 +38,12 @@ def doHertzFit(fdc, param_dict):
         comp_PoC = get_poc_regulaFalsi_method(
             segment_data.zheight, segment_data.vdeflection, param_dict['sigma'])
     poc = [comp_PoC[0], 0]
-    # Perform tilt correction
-    if param_dict['correct_tilt']:
-        segment_data.vdeflection =\
-            correct_tilt(
-                segment_data.zheight, segment_data.vdeflection, poc[0],
-                param_dict['tilt_max_offset'], param_dict['tilt_min_offset']
-            )
+    # Downsample signal
+    if param_dict['downsample_flag']:
+        downfactor= len(segment_data.zheight) // param_dict['pts_downsample']
+        idxDown = list(range(0, len(segment_data.zheight), downfactor))
+        segment_data.zheight = segment_data.zheight[idxDown]
+        segment_data.vdeflection = segment_data.vdeflection[idxDown]
     # Prepare data for the fit
     segment_data.get_force_vs_indentation(poc, param_dict['k'])
     indentation = segment_data.indentation

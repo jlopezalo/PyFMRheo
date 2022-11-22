@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..utils.force_curves import get_poc_RoV_method, get_poc_regulaFalsi_method, correct_viscous_drag, correct_tilt
+from ..utils.force_curves import get_poc_RoV_method, get_poc_regulaFalsi_method, correct_viscous_drag, correct_tilt, correct_offset
 from .HertzFit import doHertzFit
 from ..models.ting import TingModel
 
@@ -8,7 +8,22 @@ def doTingFit(fdc, param_dict):
     # Get data from the first extend segments and last retract segment
     ext_data = fdc.extend_segments[0][1]
     ret_data = fdc.retract_segments[-1][1]
-    # Get initial estimate of PoC
+    # Perform tilt correction
+    height = np.r_[ext_data.zheight, ret_data.zheight]
+    deflection = np.r_[ext_data.vdeflection, ret_data.vdeflection]
+    idx = len(ext_data.zheight)
+    if param_dict['correct_tilt']:
+        corr_defl = correct_tilt(
+            height, deflection,
+            param_dict['tilt_max_offset'], param_dict['tilt_min_offset']
+        )
+    else:
+        corr_defl = correct_offset(
+            height, deflection,
+            param_dict['tilt_max_offset'], param_dict['tilt_min_offset']
+        )
+    ext_data.vdeflection = corr_defl[:idx]
+    ret_data.vdeflection = corr_defl[idx:]
     # Get initial estimate of PoC
     if param_dict['poc_method'] == 'RoV':
         comp_PoC = get_poc_RoV_method(
@@ -17,17 +32,6 @@ def doTingFit(fdc, param_dict):
         comp_PoC = get_poc_regulaFalsi_method(
             ext_data.zheight, ext_data.vdeflection, param_dict['sigma'])
     poc = [comp_PoC[0], 0]
-    # Perform tilt correction
-    if param_dict['correct_tilt']:
-        height = np.r_[ext_data.zheight, ret_data.zheight]
-        deflection = np.r_[ext_data.vdeflection, ret_data.vdeflection]
-        idx = len(ext_data.zheight)
-        corr_defl = correct_tilt(
-            height, deflection, poc[0],
-            param_dict['tilt_max_offset'], param_dict['tilt_min_offset']
-        )
-        ext_data.vdeflection = corr_defl[:idx]
-        ret_data.vdeflection = corr_defl[idx:]
     # Perform HertzFit to obtain refined posiiton of PoC
     param_dict['correct_tilt'] = False
     hertz_result = doHertzFit(fdc, param_dict)
