@@ -51,6 +51,11 @@ def get_poc_RoV_method(app_height, app_deflection, windowforCP=350*1e-9):
   rov_poc_y = app_deflection[rovi_idx]
   return np.array([rov_poc_x, rov_poc_y])
 
+def correct_offset(
+  height, deflection, rov_poc_x, max_offset=1e-6, min_offset=10e-9):
+  mask = (height>=rov_poc_x-max_offset) & (height<=rov_poc_x-min_offset)
+  return deflection - np.nanmedian(deflection[mask])
+
 def correct_tilt(
   height, deflection, rov_poc_x, max_offset=1e-6, min_offset=10e-9):
   mask = (height>=rov_poc_x-max_offset) & (height<=rov_poc_x-min_offset)
