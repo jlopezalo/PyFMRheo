@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..utils.force_curves import get_poc_RoV_method, correct_tilt
+from ..utils.force_curves import get_poc_RoV_method, get_poc_regulaFalsi_method, correct_tilt
 from ..models.hertz import HertzModel
 
 def doHertzFit(fdc, param_dict):
@@ -18,9 +18,13 @@ def doHertzFit(fdc, param_dict):
         segment_data.zheight = segment_data.zheight[idxDown]
         segment_data.vdeflection = segment_data.vdeflection[idxDown]
     # Get initial estimate of PoC
-    rov_PoC = get_poc_RoV_method(
-        segment_data.zheight, segment_data.vdeflection, param_dict['poc_win'])
-    poc = [rov_PoC[0], 0]
+    if param_dict['poc_method'] == 'RoV':
+        comp_PoC = get_poc_RoV_method(
+            segment_data.zheight, segment_data.vdeflection, param_dict['poc_win'])
+    else:
+        comp_PoC = get_poc_regulaFalsi_method(
+            segment_data.zheight, segment_data.vdeflection, param_dict['sigma'])
+    poc = [comp_PoC[0], 0]
     # Perform tilt correction
     if param_dict['correct_tilt']:
         segment_data.vdeflection =\

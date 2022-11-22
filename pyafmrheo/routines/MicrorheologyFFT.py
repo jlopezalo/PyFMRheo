@@ -1,5 +1,5 @@
 # Get data analysis tools
-from ..utils.force_curves import get_poc_RoV_method
+from ..utils.force_curves import get_poc_RoV_method, get_poc_regulaFalsi_method
 from ..utils.signal_processing import detrend_rolling_average
 from .HertzFit import doHertzFit
 from ..models.rheology import ComputeComplexModulusFFT
@@ -17,9 +17,13 @@ def doMicrorheologyFFT(fdc, param_dict):
         segment_data.zheight = segment_data.zheight[::-1]
         segment_data.vdeflection = segment_data.vdeflection[::-1]
     # Get initial estimate of PoC
-    rov_PoC = get_poc_RoV_method(
-        segment_data.zheight, segment_data.vdeflection, param_dict['poc_win'])
-    poc = [rov_PoC[0], 0]
+    if param_dict['poc_method'] == 'RoV':
+        comp_PoC = get_poc_RoV_method(
+            segment_data.zheight, segment_data.vdeflection, param_dict['poc_win'])
+    else:
+        comp_PoC = get_poc_regulaFalsi_method(
+            segment_data.zheight, segment_data.vdeflection, param_dict['sigma'])
+    poc = [comp_PoC[0], 0]
     # Perform HertzFit to obtain refined posiiton of PoC
     hertz_result = doHertzFit(fdc, param_dict)
     hertz_d0 = hertz_result.delta0
