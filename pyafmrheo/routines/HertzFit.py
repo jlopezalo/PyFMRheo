@@ -14,11 +14,11 @@ def doHertzFit(fdc, param_dict):
     # Perform tilt correction
     if param_dict['offset_type'] == 'percentage':
         deltaz = segment_data.zheight.max() - segment_data.zheight.min()
-        maxoffset = segment_data.zheight.min() + deltaz * param_dict['tilt_max_offset']
-        minoffset = segment_data.zheight.min() + deltaz * param_dict['tilt_min_offset']
+        maxoffset = segment_data.zheight.min() + deltaz * param_dict['max_offset']
+        minoffset = segment_data.zheight.min() + deltaz * param_dict['min_offset']
     else:
-        maxoffset = param_dict['tilt_max_offset']
-        minoffset = param_dict['tilt_min_offset']
+        maxoffset = param_dict['max_offset']
+        minoffset = param_dict['min_offset']
 
     if param_dict['correct_tilt']:
         segment_data.vdeflection =\
