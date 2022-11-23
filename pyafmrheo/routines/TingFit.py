@@ -12,16 +12,18 @@ def doTingFit(fdc, param_dict):
     height = np.r_[ext_data.zheight, ret_data.zheight]
     deflection = np.r_[ext_data.vdeflection, ret_data.vdeflection]
     idx = len(ext_data.zheight)
-    if param_dict['correct_tilt']:
-        corr_defl = correct_tilt(
-            height, deflection,
-            param_dict['tilt_max_offset'], param_dict['tilt_min_offset']
-        )
+    if param_dict['offset_type'] == 'percentage':
+        deltaz = height.max() - height.min()
+        maxoffset = height.min() + deltaz * param_dict['max_offset']
+        minoffset = height.min() + deltaz * param_dict['min_offset']
     else:
-        corr_defl = correct_offset(
-            height, deflection,
-            param_dict['tilt_max_offset'], param_dict['tilt_min_offset']
-        )
+        maxoffset = param_dict['max_offset']
+        minoffset = param_dict['min_offset']
+    
+    if param_dict['correct_tilt']:
+        corr_defl = correct_tilt(height, deflection, maxoffset, minoffset)
+    else:
+        corr_defl = correct_offset(height, deflection, maxoffset, minoffset)
     ext_data.vdeflection = corr_defl[:idx]
     ret_data.vdeflection = corr_defl[idx:]
     # Get initial estimate of PoC
@@ -33,7 +35,6 @@ def doTingFit(fdc, param_dict):
             ext_data.zheight, ext_data.vdeflection, param_dict['sigma'])
     poc = [comp_PoC[0], 0]
     # Perform HertzFit to obtain refined posiiton of PoC
-    param_dict['correct_tilt'] = False
     hertz_result = doHertzFit(fdc, param_dict)
     hertz_d0 = hertz_result.delta0
     hertz_E0 = hertz_result.E0
