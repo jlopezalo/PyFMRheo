@@ -129,6 +129,5 @@ dmypy.json
 .pyre/
 
 # Tests
-/tests
 *.txt
 *.xlsx
