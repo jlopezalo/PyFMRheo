@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 
 from ..utils.force_curves import get_poc_RoV_method, get_poc_regulaFalsi_method, correct_viscous_drag, correct_tilt, correct_offset
@@ -35,7 +36,8 @@ def doTingFit(fdc, param_dict):
             ext_data.zheight, ext_data.vdeflection, param_dict['sigma'])
     poc = [comp_PoC[0], 0]
     # Perform HertzFit to obtain refined posiiton of PoC
-    hertz_result = doHertzFit(fdc, param_dict)
+    fdc_hertz_fit = copy.deepcopy(fdc)
+    hertz_result = doHertzFit(fdc_hertz_fit, param_dict)
     hertz_d0 = hertz_result.delta0
     hertz_E0 = hertz_result.E0
     # Shift PoC using d0 obtained in HertzFit

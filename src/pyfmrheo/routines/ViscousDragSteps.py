@@ -7,7 +7,6 @@ def get_retract_ramp_sizes(force_curve):
     x0 = 0
     distances = []
     sorted_ret_segments = sorted(force_curve.retract_segments, key=lambda x: int(x[0]))
-    print(sorted_ret_segments)
     for _, ret_seg in sorted_ret_segments[:-1]:
         # Maybe in the future do not use the ramp size from header and compute
         # ramp size as zmax - zmin?

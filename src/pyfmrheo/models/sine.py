@@ -1,4 +1,3 @@
-from ast import Mod
 import numpy as np
 from lmfit import Model, Parameters
 

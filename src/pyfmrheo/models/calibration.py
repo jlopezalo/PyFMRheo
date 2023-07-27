@@ -152,13 +152,13 @@ def Stark_Chi_force_constant(
     # References:
     # Sumbul et al. (2020) https://doi.org/10.3389/fphy.2020.00301
     if Chi is not None and beta is not None:
-        CorrFact = beta / Chi**2
+        CorrFact = np.sqrt(beta) / Chi
 
     # Default Chi values from:
     # Pirzer & Hugel (2009) https://doi.org/10.1063/1.3100258
     # Stark et al. (2001) https://doi.org/10.1016/S0304-3991(00)00077-2  
-    if cantType == 'Rectangular' and CorrFact is None: CorrFact = 0.8174
-    elif cantType == 'V Shape' and CorrFact is None: CorrFact: CorrFact = 0.764
+    if cantType == 'Rectangular' and CorrFact is None: CorrFact = 0.90
+    elif cantType == 'V Shape' and CorrFact is None: CorrFact: CorrFact = 0.87 
 
     # Get properties of the medium
     if medium == 'air':
