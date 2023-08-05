@@ -142,7 +142,7 @@ class TingModel:
         idxCt = np.arange(idxCt[0], idx_tm + 1)
         # Determine contact time trace.
         ttc=time[idxCt]
-        if v0t is None:
+        if v0t is None and self.v0t is None:
             # Define range to compute trace speed.
             # Including t max.
             range_v0t=np.arange((idx_tm-int(len(ttc)*3/4)), idx_tm)
@@ -150,14 +150,18 @@ class TingModel:
             # the corresponding speeds (x0)
             v0t = np.polyfit(time[range_v0t], delta[range_v0t], 1)[0]
             self.v0t = v0t
-        if v0r is None:
+        elif v0t is None and self.v0t is not None:
+            v0t = self.v0t
+        if v0r is None and self.v0r is None:
             # Define range to compute retrace speed.
             # Excluding t max.
             range_v0r=np.arange(idx_tm+2, (idx_tm+1+int(len(ttc)*3/4)))
             # Fit 1 degree polynomial (x0 + m) to trace and retrace for determining
             # the corresponding speeds (x0) 
             v0r = -1 * np.polyfit(time[range_v0r], delta[range_v0r], 1)[0]
-            self.v0t = v0r
+            self.v0r = v0r
+        elif v0r is None and self.v0r is not None:
+            v0r = self.v0r
         # Compute mean speed.
         v0=(v0r+v0t)/2
         # Compute retrace contact time.

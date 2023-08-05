@@ -103,7 +103,10 @@ def doTingFit(fdc, param_dict):
     # Compute tm and F0 using the downsampled signal
     idx_tm = np.argmax(force_fit[idxDown])
     f0idx = np.where(time_fit==0)[0]
-    F0_init=force_fit[f0idx]-param_dict['vdrag']*v0t
+    if v0t is not None:
+        F0_init=force_fit[f0idx]-param_dict['vdrag']*v0t
+    else:
+        F0_init=force_fit[f0idx]
     # Compute bounds for tc and F0
     tc_max = tc_fit+downfactor/(1/(time_fit[1]-time_fit[0]))*10
     tc_min = tc_fit-downfactor/(1/(time_fit[1]-time_fit[0]))*10
