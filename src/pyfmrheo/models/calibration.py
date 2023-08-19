@@ -80,7 +80,7 @@ def omega(Re):
         - 0.000044510 * tau**5 )*( 1 - 0.59702 * tau + 0.55182 * tau**2 \
         - 0.18357 * tau**3 + 0.079156 * tau**4 - 0.014369 * tau**5 \
         + 0.0028361 * tau**6 )**-1
-    return np.complex(omega_real, omega_imag)
+    return complex(omega_real, omega_imag)
 
 def gamma_circ(Re):
     K1 = kv(1, -1j*np.sqrt(1j*Re))
