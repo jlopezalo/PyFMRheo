@@ -15,7 +15,10 @@ def get_coeff(ind_geom,  tip_parameter, poisson_ratio):
         n = 2
     elif ind_geom == 'flat_punch':
         coeff = 2 * tip_parameter * 1/(1-poisson_ratio**2)
-        n = 2
+        n = 1
+    elif ind_geom == 'stiffness':
+        coeff = 1
+        n = 1
     else:
         raise Exception('Non valid indenter geometry')
     return coeff, n
