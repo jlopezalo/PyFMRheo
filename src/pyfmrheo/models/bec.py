@@ -120,3 +120,38 @@ def bec_garcia_garcia(h, indentation, ind_shape, tip_parameter, order=4):
                 coeff += O(h, indentation[i], tip_parameter)
         coefficients_out.append(coeff)
     return coefficients_out
+
+# Kontomaris 2021 EPJ: approximation to spherical indenter
+# Source: https://doi.org/10.1088/1361-6404/abccfb
+# Equation 17
+
+# c1 =1.0100000
+# c2 =−0.0730300
+# c3 =−0.1357000
+# c4 =0.0359800
+# c5 =−0.0040240
+# c6 =0.0001653
+kontomaris_model_factors = [
+        lambda indentation, R : (2/3 * 1.0100000 / np.sqrt(R)),                                                  # Order 1
+        lambda indentation, R : (1/2 * −0.0730300 * np.sqrt(indentation) / R ),                                  # Order 2
+        lambda indentation, R : (1/3 * −0.1357000 * indentation * np.sqrt(indentation) / R ** 2 ),               # Order 3
+        lambda indentation, R : (1/4 * 0.0359800 * indentation ** 2 * np.sqrt(indentation) / R ** 3)             # Order 4
+        lambda indentation, R : (1/5 * −0.0040240 * indentation ** 3 * np.sqrt(indentation) / R ** 4)            # Order 5
+        lambda indentation, R : (1/6 * 0.0001653 * indentation ** 4 * np.sqrt(indentation) / R ** 5)             # Order 6
+            
+def sphere_approx_kontomaris(indentation, ind_shape, tip_parameter, order=6):
+    coefficients_out = []
+    model_factors = kontomaris_model_factors
+    if not model_factors:
+        raise Exception(f"The Kontomaris approximation is not suitable for the {ind_shape} geometry.") 
+    for i in range(len(indentation)):
+        # The correction factor is computed as:
+        # coef = O0 + O1 + On...
+        # Order 0 coefficient common in all models
+        for j in range(order):
+            O = model_factors[j]
+            coeff += 3/2 * np.sqrt(R) * O(indentation[i], tip_parameter)
+        coefficients_out.append(coeff)
+    return coefficients_out
+    
+
