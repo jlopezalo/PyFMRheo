@@ -67,6 +67,8 @@ def doDMTFit(fdc, param_dict):
     dmt_model.adhesion_force = adhesionForce
     if not param_dict['auto_init_E0']:
         dmt_model.E0_init = param_dict['E0']
+    if param_dict.get('fit_method', None) is not None:
+        dmt_model.fit_method = param_dict['fit_method']
     dmt_model.fit(indentation, force)
     # Return fitted model object
     return dmt_model

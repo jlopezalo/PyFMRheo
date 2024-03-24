@@ -83,6 +83,9 @@ def doMicrorheologySine(fdc, param_dict):
         indentation = zheight - deflection
         # Get angular frequency
         omega = 2.*np.pi*frequency
+        if param_dict.get('fit_method', None) is not None:
+            ind_sine_wave.fit_method = param_dict['fit_method']
+            delf_sine_wave.fit_method = param_dict['fit_method']
         # Fit Sine to indentation wave
         ind_sine_wave = SineWave(omega)
         ind_sine_wave.amplitude_init = np.std(indentation) * 2.**0.5

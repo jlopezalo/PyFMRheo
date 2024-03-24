@@ -9,6 +9,7 @@ class DMTModel:
         # Tip geomtry params
         self.ind_geom = ind_geom         # No units
         self.tip_parameter = tip_param   # If radius units is meters, If half angle units is degrees
+        self.fit_method = 'leastsq'
         # Model params #####################
         self.n_params = None
         # Adheshion force
@@ -73,7 +74,7 @@ class DMTModel:
         
         # Do fit
         self.n_params = len(DMTmodelfit.param_names)
-        result_hertz = DMTmodelfit.fit(force, params, indentation=indentation)
+        result_hertz = DMTmodelfit.fit(force, params, indentation=indentation, method=self.fit_method)
 
         # Assign fit results to model params
         self.E0 = result_hertz.best_values['E0']

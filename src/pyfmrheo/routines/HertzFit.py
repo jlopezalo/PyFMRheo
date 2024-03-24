@@ -71,6 +71,8 @@ def doHertzFit(fdc, param_dict):
     hertz_model.f0_init = param_dict['f0']
     if param_dict['fit_line']:
         hertz_model.slope_init = param_dict['slope']
+    if param_dict.get('fit_method', None) is not None:
+        hertz_model.fit_method = param_dict['fit_method']
     hertz_model.fit(indentation, force)
     # Return fitted model object
     return hertz_model

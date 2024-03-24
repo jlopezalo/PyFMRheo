@@ -3,6 +3,7 @@ from lmfit import Model, Parameters
 
 class DragSphereModel:
     def __init__(self) -> None:
+        self.fit_method = 'leastsq'
         # Effecive area of the cantilever
         self.a_eff = None
         self.a_eff_init = 1
@@ -41,7 +42,7 @@ class DragSphereModel:
         params = self.build_params()
         
         # Do fit
-        result_drag_sphere = drag_sphere_model_fit.fit(Bh, params, distance=distance)
+        result_drag_sphere = drag_sphere_model_fit.fit(Bh, params, distance=distance, method=self.fit_method)
         
         # Assign fit results to model params
         self.a_eff = result_drag_sphere.best_values['a_eff']

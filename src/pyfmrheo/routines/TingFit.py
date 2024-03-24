@@ -145,6 +145,9 @@ def doTingFit(fdc, param_dict):
     # vdrag
     ting_model.vdrag = param_dict['vdrag']
 
+    if param_dict.get('fit_method', None) is not None:
+        ting_model.fit_method = param_dict['fit_method']
+
     # Do fit
     ting_model.fit(
         time_fit[idxDown], force_fit[idxDown], ind_fit[idxDown],

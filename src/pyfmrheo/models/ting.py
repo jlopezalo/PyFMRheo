@@ -11,6 +11,7 @@ class TingModel:
         self.ind_geom = ind_geom         # No units
         self.tip_parameter = tip_param   # If radius units is meters, If half angle units is degrees
         self.modelFt = modelFt
+        self.fit_method = 'leastsq'
         # Compiutation params
         self.fit_hline_flag = False
         self.apply_bec_flag = False
@@ -234,7 +235,7 @@ class TingModel:
         # Do fit
         self.n_params = len(tingmodelfit.param_names)
 
-        result_ting = tingmodelfit.fit(F, params, time=time)
+        result_ting = tingmodelfit.fit(F, params, time=time, method=self.fit_method)
         
         # Assign fit results to model params
         self.E0 = result_ting.best_values['E0']

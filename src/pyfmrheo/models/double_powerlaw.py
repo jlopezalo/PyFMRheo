@@ -3,6 +3,7 @@ from lmfit import Model, Parameters
 
 class DoublePowerLawModel:
     def __init__(self) -> None:
+        self.fit_method = 'leastsq'
         # A factor
         self.A = None
         self.A_init = None
@@ -60,7 +61,7 @@ class DoublePowerLawModel:
         # Do fit
         self.n_params = len(pwlmodelfit.param_names)
 
-        result_pwl = pwlmodelfit.fit(G, params, freq=freq)
+        result_pwl = pwlmodelfit.fit(G, params, freq=freq, method=self.fit_method)
 
         # Assign fit results to model params
         self.A = result_pwl.best_values['A']

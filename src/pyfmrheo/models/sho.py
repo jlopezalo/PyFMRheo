@@ -4,6 +4,7 @@ from lmfit import Model, Parameters
 class SHOModel:
     def __init__(self):
         self.n_params = None
+        self.fit_method = 'leastsq'
         # A white
         self.Awhite = None
         self.Awhite_init = None
@@ -74,7 +75,7 @@ class SHOModel:
         self.n_params = len(shomodelfit.param_names)
         
         # Do fit
-        result_sho = shomodelfit.fit(ampl, params, freq=freq)
+        result_sho = shomodelfit.fit(ampl, params, freq=freq, method=self.fit_method)
         
         # Assign fit results to model params
         self.Awhite = result_sho.best_values['Awhite']

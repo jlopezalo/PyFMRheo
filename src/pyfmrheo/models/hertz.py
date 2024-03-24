@@ -15,6 +15,7 @@ class HertzModel:
         self.ind_geom = ind_geom         # No units
         self.tip_parameter = tip_param   # If radius units is meters, If half angle units is degrees
         self.correction_model = correction_model
+        self.fit_method = 'leastsq'
         # Compiutation params
         self.fit_hline_flag = False
         self.apply_correction_flag = False
@@ -132,7 +133,7 @@ class HertzModel:
         
         # Do fit
         self.n_params = len(hertzmodelfit.param_names)
-        result_hertz = hertzmodelfit.fit(force, params, indentation=indentation)
+        result_hertz = hertzmodelfit.fit(force, params, indentation=indentation, method=self.fit_method)
 
         # Assign fit results to model params
         self.delta0 = result_hertz.best_values['delta0']

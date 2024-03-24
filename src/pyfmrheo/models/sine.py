@@ -3,6 +3,7 @@ from lmfit import Model, Parameters
 
 class SineWave:
     def __init__(self, ang_freq):
+        self.fit_method = 'leastsq'
         # Angular frequency of sine signal
         self.ang_freq = ang_freq
         # Amplitude of sine signal
@@ -45,7 +46,7 @@ class SineWave:
 
         # Do fit
         self.n_params = len(sinemodelfit.param_names)
-        result_sine = sinemodelfit.fit(wave, params, time=time)
+        result_sine = sinemodelfit.fit(wave, params, time=time, method=self.fit_method)
         
         # Assign fit results to model params
         self.amplitude = result_sine.best_values['amplitude']
