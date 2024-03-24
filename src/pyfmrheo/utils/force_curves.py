@@ -3,6 +3,11 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import gaussian_filter
 
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return array[idx]
+
 def checkIfIncreasing(data):
   i = len(data)
   if i < 2: 
