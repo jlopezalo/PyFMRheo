@@ -1,4 +1,5 @@
 # Imports
+import traceback
 import numpy as np
 
 # Dimitriadis et al. 2002
@@ -10,13 +11,19 @@ def bec_dimitriadis_paraboloid_bonded(h, indentation, ind_shape, R):
         raise Exception(f"The Dimitriadis paraboloid bonded BEC model is not suitable for the {ind_shape} geometry.") 
     coefficients_out = []
     for i in range(len(indentation)):
-        coeff = 1.0
-        if h > 0:
-            X = np.sqrt(indentation[i] * R) / h
-            o2 = 1.133 * X + 1.283 * X ** 2
-            o4 = 0.769 * X ** 3 + 0.0975 * X ** 4
-            coeff = 1 + o2 + o4
-        coefficients_out.append(coeff)
+        try:
+            coeff = 1.0
+            if h > 0:
+                X = np.sqrt(indentation[i] * R) / h
+                o2 = 1.133 * X + 1.283 * X ** 2
+                o4 = 0.769 * X ** 3 + 0.0975 * X ** 4
+                coeff = 1 + o2 + o4
+            coefficients_out.append(coeff)
+        except Exception as _:
+            # Handle exceptions to avoid correction factor array and indentation array
+            # having different shapes.
+            traceback.print_exc()
+            coefficients_out.append(1.0)
             
     return coefficients_out
 
@@ -26,13 +33,19 @@ def bec_dimitriadis_paraboloid_not_bonded(h, indentation, ind_shape, R):
         raise Exception(f"The Dimitriadis paraboloid not bonded BEC model is not suitable for the {ind_shape} geometry.") 
     coefficients_out = []
     for i in range(len(indentation)):
-        coeff = 1.0
-        if h > 0:
-            X = np.sqrt(indentation[i] * R) / h
-            o2 = 0.884 * X + 0.781 * X ** 2
-            o4 = 0.386 * X ** 3 + 0.0048 * X ** 4
-            coeff = 1 + o2 + o4
-        coefficients_out.append(coeff)
+        try:
+            coeff = 1.0
+            if h > 0:
+                X = np.sqrt(indentation[i] * R) / h
+                o2 = 0.884 * X + 0.781 * X ** 2
+                o4 = 0.386 * X ** 3 + 0.0048 * X ** 4
+                coeff = 1 + o2 + o4
+            coefficients_out.append(coeff)
+        except Exception as _:
+            # Handle exceptions to avoid correction factor array and indentation array
+            # having different shapes.
+            traceback.print_exc()
+            coefficients_out.append(1.0)
             
     return coefficients_out
 
@@ -44,14 +57,20 @@ def bec_gavara_cone(h, indentation, ind_shape, half_opening_angle):
         raise Exception(f"The Gavara cone BEC model is not suitable for the {ind_shape} geometry.") 
     coefficients_out = []
     for i in range(len(indentation)):
-        coeff = 1.0
-        if h > 0:
-            X = indentation[i] / h
-            tan_angle = np.tan(half_opening_angle)
-            o1 = 1.7795 * (2 * tan_angle / np.pi ** 2) * X
-            o2 = 16.0 * (1.7795) ** 2 * tan_angle ** 2 * X ** 2
-            coeff = 1 + o1 + o2
-        coefficients_out.append(coeff)
+        try:
+            coeff = 1.0
+            if h > 0:
+                X = indentation[i] / h
+                tan_angle = np.tan(half_opening_angle)
+                o1 = 1.7795 * (2 * tan_angle / np.pi ** 2) * X
+                o2 = 16.0 * (1.7795) ** 2 * tan_angle ** 2 * X ** 2
+                coeff = 1 + o1 + o2
+            coefficients_out.append(coeff)
+        except Exception as _:
+            # Handle exceptions to avoid correction factor array and indentation array
+            # having different shapes.
+            traceback.print_exc()
+            coefficients_out.append(1.0)
             
     return coefficients_out
 
@@ -64,13 +83,19 @@ def bec_managuli_cone(h, indentation, ind_shape, half_opening_angle):
         raise Exception(f"The Managuli cone BEC model is not suitable for the {ind_shape} geometry.") 
     coefficients_out = []
     for i in range(len(indentation)):
-        coeff = 1.0
-        if h > 0:
-            C = (1.7795 * np.tan(half_opening_angle)) / np.pi ** 2
-            o1 = 4 * C * indentation[i] / h
-            o2 = 20 * C ** 2 * indentation[i] ** 2 / h ** 2
-            coeff = 1 + o1 + o2
-        coefficients_out.append(coeff)
+        try:
+            coeff = 1.0
+            if h > 0:
+                C = (1.7795 * np.tan(half_opening_angle)) / np.pi ** 2
+                o1 = 4 * C * indentation[i] / h
+                o2 = 20 * C ** 2 * indentation[i] ** 2 / h ** 2
+                coeff = 1 + o1 + o2
+            coefficients_out.append(coeff)
+        except Exception as _:
+            # Handle exceptions to avoid correction factor array and indentation array
+            # having different shapes.
+            traceback.print_exc()
+            coefficients_out.append(1.0)
             
     return coefficients_out
 
@@ -113,45 +138,61 @@ def bec_garcia_garcia(h, indentation, ind_shape, tip_parameter, order=4):
         # The correction factor is computed as:
         # coef = O0 + O1 + On...
         # Order 0 coefficient common in all models
-        coeff = 1.0
-        if h > 0:
-            for j in range(order):
-                O = model_factors[j]
-                coeff += O(h, indentation[i], tip_parameter)
-        coefficients_out.append(coeff)
+        try:
+            coeff = 1.0
+            if h > 0:
+                for j in range(order):
+                    O = model_factors[j]
+                    coeff += O(h, indentation[i], tip_parameter)
+            coefficients_out.append(coeff)
+        except Exception as _:
+            # Handle exceptions to avoid correction factor array and indentation array
+            # having different shapes.
+            traceback.print_exc()
+            coefficients_out.append(1.0)
     return coefficients_out
 
 # Kontomaris 2021 EPJ: approximation to spherical indenter
 # Source: https://doi.org/10.1088/1361-6404/abccfb
 # Equation 17
 
-# c1 =1.0100000
-# c2 =−0.0730300
-# c3 =−0.1357000
-# c4 =0.0359800
-# c5 =−0.0040240
-# c6 =0.0001653
+# c1 = 1.0100000
+# c2 = −0.0730300
+# c3 = −0.1357000
+# c4 = 0.0359800
+# c5 = −0.0040240
+# c6 = 0.0001653
+
 kontomaris_model_factors = [
-        lambda indentation, R : (2/3 * 1.0100000 / np.sqrt(R)),                                                  # Order 1
-        lambda indentation, R : (1/2 * −0.0730300 * np.sqrt(indentation) / R ),                                  # Order 2
-        lambda indentation, R : (1/3 * −0.1357000 * indentation * np.sqrt(indentation) / R ** 2 ),               # Order 3
-        lambda indentation, R : (1/4 * 0.0359800 * indentation ** 2 * np.sqrt(indentation) / R ** 3)             # Order 4
-        lambda indentation, R : (1/5 * −0.0040240 * indentation ** 3 * np.sqrt(indentation) / R ** 4)            # Order 5
-        lambda indentation, R : (1/6 * 0.0001653 * indentation ** 4 * np.sqrt(indentation) / R ** 5)             # Order 6
-            
-def sphere_approx_kontomaris(indentation, ind_shape, tip_parameter, order=6):
+        lambda _, R : 2/3 * 1.0100000 / np.sqrt(R),                                                            # Order 1
+        lambda indentation, R : 1/2 * -0.0730300 * np.sqrt(indentation) / R ,                                  # Order 2
+        lambda indentation, R : 1/3 * -0.1357000 * indentation * np.sqrt(indentation) / R ** 2 ,               # Order 3
+        lambda indentation, R : 1/4 * 0.0359800 * indentation ** 2 * np.sqrt(indentation) / R ** 3,            # Order 4
+        lambda indentation, R : 1/5 * -0.0040240 * indentation ** 3 * np.sqrt(indentation) / R ** 4,           # Order 5
+        lambda indentation, R : 1/6 * 0.0001653 * indentation ** 4 * np.sqrt(indentation) / R ** 5             # Order 6
+]
+
+def sphere_approx_kontomaris(_, indentation, ind_shape, R, order=6):
     coefficients_out = []
     model_factors = kontomaris_model_factors
-    if not model_factors:
-        raise Exception(f"The Kontomaris approximation is not suitable for the {ind_shape} geometry.") 
+    if ind_shape != "paraboloid":
+        raise Exception(f"The Kontomaris approximation is only suitable for the paraboloid geometry.") 
     for i in range(len(indentation)):
         # The correction factor is computed as:
         # coef = O0 + O1 + On...
         # Order 0 coefficient common in all models
-        for j in range(order):
-            O = model_factors[j]
-            coeff += 3/2 * np.sqrt(R) * O(indentation[i], tip_parameter)
-        coefficients_out.append(coeff)
+        try:
+            coeff = 0.0
+            for j in range(order):
+                O = model_factors[j]
+                coeff += 3/2 * np.sqrt(R) * O(indentation[i], R)
+            coefficients_out.append(coeff)
+        except Exception as _:
+            # Handle exceptions to avoid correction factor array and indentation array
+            # having different shapes.
+            traceback.print_exc()
+            coefficients_out.append(1.0)
+
     return coefficients_out
     
 

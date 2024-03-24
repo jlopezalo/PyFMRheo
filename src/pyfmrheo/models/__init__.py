@@ -1,4 +1,4 @@
-from .bec import *
+from .correction_factors import *
 from .calibration import *
 from .double_powerlaw import *
 from .drag_sphere_model import *

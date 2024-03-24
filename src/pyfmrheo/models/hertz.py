@@ -1,23 +1,23 @@
 import numpy as np
 from lmfit import Model, Parameters
 
-from .bec import (
+from .correction_factors import (
     bec_dimitriadis_paraboloid_bonded, bec_dimitriadis_paraboloid_not_bonded, 
-    bec_gavara_cone, bec_managuli_cone, bec_garcia_garcia
+    bec_gavara_cone, bec_managuli_cone, bec_garcia_garcia, sphere_approx_kontomaris
 )
 
 from .geom_coeffs import get_coeff
 
 class HertzModel:
     # Model abstract class
-    def __init__(self, ind_geom, tip_param, bec_model=None) -> None:
+    def __init__(self, ind_geom, tip_param, correction_model=None) -> None:
         # Tip geomtry params
         self.ind_geom = ind_geom         # No units
         self.tip_parameter = tip_param   # If radius units is meters, If half angle units is degrees
-        self.bec_model = bec_model
+        self.correction_model = correction_model
         # Compiutation params
         self.fit_hline_flag = False
-        self.apply_bec_flag = False
+        self.apply_correction_flag = False
         # Model params #####################
         self.n_params = None
         # Contact point
@@ -53,21 +53,23 @@ class HertzModel:
         self.chisq = None
         self.redchi = None
     
-    def get_bec_coeffs(self, sample_height, indentation):
-        bec_params = [sample_height, (indentation - self.delta0), self.indenter_shape, self.tip_parameter]
-        if self.bec_model == 'dimitriadis_paraboloid_bonded':
-            return bec_dimitriadis_paraboloid_bonded(*bec_params)
-        elif self.bec_model == 'dimitriadis_paraboloid_not_bonded':
-            return bec_dimitriadis_paraboloid_not_bonded(*bec_params)
-        elif self.bec_model == 'gavara_cone':
-            return bec_gavara_cone(*bec_params)
-        elif self.bec_model == 'managuli_cone':
-            return bec_managuli_cone(*bec_params)
-        elif self.bec_model == 'garcia_garcia':
-            return bec_garcia_garcia(*bec_params)
+    def get_correction_coeffs(self, sample_height, indentation):
+        correction_params = [sample_height, (indentation - self.delta0), self.ind_geom, self.tip_parameter]
+        if self.correction_model == 'dimitriadis_paraboloid_bonded':
+            return bec_dimitriadis_paraboloid_bonded(*correction_params)
+        elif self.correction_model == 'dimitriadis_paraboloid_not_bonded':
+            return bec_dimitriadis_paraboloid_not_bonded(*correction_params)
+        elif self.correction_model == 'gavara_cone':
+            return bec_gavara_cone(*correction_params)
+        elif self.correction_model == 'managuli_cone':
+            return bec_managuli_cone(*correction_params)
+        elif self.correction_model == 'garcia_garcia':
+            return bec_garcia_garcia(*correction_params)
+        elif self.correction_model == 'kontomaris':
+            return sphere_approx_kontomaris(*correction_params)
         else:
             # TO DO: Implement custom exception
-            raise Exception('BEC model not implemented')
+            raise Exception('Correction model not implemented')
     
     def build_params(self):
         params = Parameters()
@@ -88,10 +90,12 @@ class HertzModel:
         # Get indenter shape coefficient and exponent
         coeff, n = get_coeff(self.ind_geom, self.tip_parameter, self.poisson_ratio)
         # Get bottom effect correction coefficients
-        if self.bec_model and sample_height:
-            bec_coeffs = self.get_bec_coeffs(sample_height, indentation)
+        if self.correction_model and self.correction_model == 'kontomaris':
+            correction_coeffs = self.get_correction_coeffs(None, indentation)
+        elif self.correction_model and sample_height:
+            correction_coeffs = self.get_correction_coeffs(sample_height, indentation)
         else:
-            bec_coeffs = np.ones(indentation.shape)
+            correction_coeffs = np.ones(indentation.shape)
         # Compute the force using hertz model
         for i in range(len(force)):
             if indentation[i] < delta0:
@@ -103,8 +107,8 @@ class HertzModel:
                     force[i] = f0
             else:
                 # Fit Hertz model on the contact part
-                # F = F0 * BEC_Correction
-                force[i] = coeff * bec_coeffs[i] * E0 * np.power((indentation[i] - delta0), n) + f0
+                # F = F0 * Correction Coefficient
+                force[i] = coeff * correction_coeffs[i] * E0 * np.power((indentation[i] - delta0), n) + f0
         return force
 
     def fit(self, indentation, force, sample_height=None):
@@ -169,7 +173,7 @@ class HertzModel:
         # Fit parameters
         Indenter shape: {self.ind_geom}\n
         Tip paraneter: {self.tip_parameter}\n
-        BEC Model: {self.bec_model}\n
+        Correction Model: {self.correction_model}\n
         Number of free parameters: {self.n_params}\n
         delta0: {self.delta0}\n
         E0: {self.E0}\n
