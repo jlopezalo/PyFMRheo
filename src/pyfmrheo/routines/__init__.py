@@ -1,3 +1,4 @@
+from .DMTFit import *
 from .HertzFit import *
 from .MicrorheologyFFT import *
 from .MicrorheologySine import *
