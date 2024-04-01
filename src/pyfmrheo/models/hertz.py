@@ -57,14 +57,17 @@ class HertzModel:
     def get_correction_coeffs(self, sample_height, indentation):
         correction_params = [sample_height, (indentation - self.delta0), self.ind_geom, self.tip_parameter]
         if self.correction_model == 'dimitriadis_paraboloid_bonded':
+            self.poisson_ratio = 0.5
             return bec_dimitriadis_paraboloid_bonded(*correction_params)
         elif self.correction_model == 'dimitriadis_paraboloid_not_bonded':
+            self.poisson_ratio = 0.5
             return bec_dimitriadis_paraboloid_not_bonded(*correction_params)
         elif self.correction_model == 'gavara_cone':
             return bec_gavara_cone(*correction_params)
         elif self.correction_model == 'managuli_cone':
             return bec_managuli_cone(*correction_params)
         elif self.correction_model == 'garcia_garcia':
+            self.poisson_ratio = 0.5
             return bec_garcia_garcia(*correction_params)
         elif self.correction_model == 'kontomaris':
             return sphere_approx_kontomaris(*correction_params)
