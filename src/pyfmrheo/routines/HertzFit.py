@@ -48,7 +48,6 @@ def doHertzFit(fdc, param_dict):
     segment_data.get_force_vs_indentation(poc, param_dict['k'])
     indentation = segment_data.indentation
     force = segment_data.force
-    force = force - force[0]
     contact_mask = indentation >= 0
     ncont_ind = indentation[~contact_mask]
     cont_ind = indentation[contact_mask]
