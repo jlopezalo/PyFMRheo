@@ -6,7 +6,7 @@ from ..models.dmt import DMTModel
 def doDMTFit(fdc, param_dict):
     # Get segment data
     if param_dict['curve_seg'] == 'extend':
-        segment_data = fdc.extend_segments[0][1]
+        raise Exception("DMT can only be fit to the retract segment of the curve!")
     else:
         segment_data = fdc.retract_segments[-1][1]
         segment_data.zheight = segment_data.zheight[::-1]
