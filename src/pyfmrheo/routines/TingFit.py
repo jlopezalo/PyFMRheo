@@ -23,7 +23,7 @@ def doTingFit(fdc, param_dict):
     
     if param_dict['correct_tilt']:
         corr_defl = correct_tilt(height, deflection, maxoffset, minoffset)
-    else:
+    elif param_dict['correct_offset']:
         corr_defl = correct_offset(height, deflection, maxoffset, minoffset)
     ext_data.vdeflection = corr_defl[:idx]
     ret_data.vdeflection = corr_defl[idx:]

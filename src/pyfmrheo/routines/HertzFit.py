@@ -25,7 +25,7 @@ def doHertzFit(fdc, param_dict):
             correct_tilt(
                 segment_data.zheight, segment_data.vdeflection, maxoffset, minoffset
             )
-    else:
+    elif param_dict['correct_offset']:
         segment_data.vdeflection =\
             correct_offset(
                 segment_data.zheight, segment_data.vdeflection, maxoffset, minoffset
