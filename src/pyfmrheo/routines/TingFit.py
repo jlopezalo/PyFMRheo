@@ -25,6 +25,8 @@ def doTingFit(fdc, param_dict):
         corr_defl = correct_tilt(height, deflection, maxoffset, minoffset)
     elif param_dict['correct_offset']:
         corr_defl = correct_offset(height, deflection, maxoffset, minoffset)
+    else:
+        corr_defl = deflection
     ext_data.vdeflection = corr_defl[:idx]
     ret_data.vdeflection = corr_defl[idx:]
     # Get initial estimate of PoC
