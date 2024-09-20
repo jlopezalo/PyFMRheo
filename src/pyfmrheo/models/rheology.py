@@ -166,7 +166,7 @@ def ComputeBh(
     _, G, gamma2, _, _ =\
          TransferFunction(indentation, force, fs, frequency=freq, nfft=nfft, freq_tol=freq_tol)
     
-    Hd = G * np.exp(-1 * np.radians(fi))
+    Hd = G * np.exp(-1j * np.radians(fi))
 
     # Caluculate correction factor B(h)=Hd/(2πif)
     Bh = np.imag(Hd) / (2 * np.pi * freq)
